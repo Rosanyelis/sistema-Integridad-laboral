@@ -1,0 +1,27 @@
+{
+  "menu": [
+    {
+      "name": "Dashboard",
+      "icon": "menu-icon icon-base ti tabler-smart-home",
+      "slug": "dashboard",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Configuraciones",
+      "icon": "menu-icon icon-base ti tabler-settings",
+      "slug": "configuraciones",
+      "submenu": [
+        {
+          "url": "users",
+          "name": "Usuarios",
+          "slug": "users"
+        },
+        {
+          "url": "roles",
+          "name": "Roles",
+          "slug": "roles"
+        }
+      ]
+    }
+  ]
+}
