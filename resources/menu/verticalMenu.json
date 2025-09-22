@@ -7,6 +7,47 @@
       "url": "/dashboard"
     },
     {
+      "name": "Consultas",
+      "icon": "menu-icon icon-base ti tabler-user-search",
+      "slug": "consultas",
+      "submenu": [
+        {
+          "url": "people",
+          "name": "Personas",
+          "slug": "people"
+        },
+        {
+          "url": "workplace_integrity",
+          "name": "Integridad Laboral",
+          "slug": "workplace_integrity"
+        }
+      ]
+    },
+    {
+      "name": "Empresas",
+      "icon": "menu-icon icon-base ti tabler-building-cog",
+      "slug": "companies",
+      "submenu": [
+        {
+          "url": "companies",
+          "name": "Listado",
+          "slug": "companies"
+        }
+      ]
+    },
+    {
+      "name": "Reclutador",
+      "icon": "menu-icon icon-base ti tabler-user-cog",
+      "slug": "recruiters",
+      "submenu": [
+        {
+          "url": "recruiters",
+          "name": "Listado",
+          "slug": "recruiters"
+        }
+      ]
+    },
+    {
       "name": "Configuraciones",
       "icon": "menu-icon icon-base ti tabler-settings",
       "slug": "configuraciones",

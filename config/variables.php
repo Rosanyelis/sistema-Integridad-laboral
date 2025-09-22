@@ -1,9 +1,9 @@
 <?php
 // Variables
 return [
-  "creatorName" => "Pixinvent",
-  "creatorUrl" => "https://pixinvent.com",
-  "templateName" => "Vuexy",
+  "creatorName" => "Ross Digital",
+  "creatorUrl" => "https://rossdigital.dev",
+  "templateName" => "Integridad Laboral",
   "templateSuffix" => "Bootstrap Admin Template",
   "templateVersion" => "3.0.0",
   "templateFree" => false,

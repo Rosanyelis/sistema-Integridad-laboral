@@ -1,5 +1,5 @@
 /**
- * Page User Management - DataTable Configuration
+ * Page People Management - DataTable Configuration
  */
 
 'use strict';
@@ -13,32 +13,40 @@ document.addEventListener('DOMContentLoaded', function (e) {
   headingColor = config.colors.headingColor;
 
   // Variable declaration for table
-  const dt_user_table = document.querySelector('.datatables-users'),
-    userView = (window.baseUrl || '/') + 'users/',
+  const dt_people_table = document.querySelector('.datatables-people'),
+    peopleView = (window.baseUrl || '/') + 'people/',
     statusObj = {
-      'Activo': { title: 'Activo', class: 'bg-label-success' },
-      'Inactivo': { title: 'Inactivo', class: 'bg-label-danger' }
+      'Pendiente': { title: 'Pendiente', class: 'bg-label-warning' },
+      'Disponible': { title: 'Disponible', class: 'bg-label-info' },
+      'En Proceso': { title: 'En Proceso', class: 'bg-label-primary' },
+      'Contratado': { title: 'Contratado', class: 'bg-label-success' },
+      'Part-Time': { title: 'Part-Time', class: 'bg-label-secondary' },
+      'Despido': { title: 'Despido', class: 'bg-label-danger' },
+      'Desaucio': { title: 'Desaucio', class: 'bg-label-danger' },
+      'Renuncia': { title: 'Renuncia', class: 'bg-label-warning' },
+      'Aplica': { title: 'Aplica', class: 'bg-label-info' },
+      'No Aplica': { title: 'No Aplica', class: 'bg-label-secondary' }
     };
   var select2 = $('.select2');
 
   if (select2.length) {
     var $this = select2;
     $this.wrap('<div class="position-relative"></div>').select2({
-      placeholder: 'Seleccionar País',
+      placeholder: 'Seleccionar Opción',
       dropdownParent: $this.parent()
     });
   }
 
-  // Users datatable
-  if (dt_user_table) {
-    const dt_user = new DataTable(dt_user_table, {
+  // People datatable
+  if (dt_people_table) {
+    const dt_people = new DataTable(dt_people_table, {
       ajax: {
-        url: (window.baseUrl || '/') + 'users',
+        url: (window.baseUrl || '/') + 'people',
         type: 'GET',
         data: function (d) {
           d.search = $('#searchInput').val() || '';
-          d.role = $('#roleFilter').val() || '';
           d.status = $('#statusFilter').val() || '';
+          d.verified = $('#verifiedFilter').val() || '';
         }
       },
       columns: [
@@ -46,9 +54,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
         { data: 'id' },
         { data: 'id', orderable: false, render: DataTable.render.select() },
         { data: 'name' },
-        { data: 'role' },
+        { data: 'dni' },
+        { data: 'age' },
+        { data: 'verified' },
         { data: 'status' },
-        { data: 'created_at' },
         { data: 'action' }
       ],
       columnDefs: [
@@ -79,7 +88,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
           responsivePriority: 3,
           render: function (data, type, full, meta) {
             var name = full['name'];
-            var email = full['email'];
             var output;
 
             // For Avatar badge
@@ -100,13 +108,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
               '</div>' +
               '<div class="d-flex flex-column">' +
               '<a href="' +
-              userView + full['id'] +
+              peopleView + full['id'] +
               '" class="text-heading text-truncate"><span class="fw-medium">' +
               name +
               '</span></a>' +
-              '<small>' +
-              (full['email'] || '') +
-              '</small>' +
               '</div>' +
               '</div>';
             return row_output;
@@ -115,24 +120,33 @@ document.addEventListener('DOMContentLoaded', function (e) {
         {
           targets: 3,
           render: function (data, type, full, meta) {
-            var role = full['role'];
-            var roleBadgeObj = {
-              'Super Admin': '<i class="icon-base ti tabler-crown icon-md text-primary me-2"></i>',
-              'Administrador': '<i class="icon-base ti tabler-edit icon-md text-warning me-2"></i>',
-              'Empresa': '<i class="icon-base ti tabler-building icon-md text-success me-2"></i>',
-              'Reclutador': '<i class="icon-base ti tabler-user icon-md text-info me-2"></i>'
-            };
+            return '<span class="text-truncate d-flex align-items-center text-heading">' + data + '</span>';
+          }
+        },
+        {
+          targets: 4,
+          render: function (data, type, full, meta) {
+            return '<span class="text-heading">' + data + ' años</span>';
+          }
+        },
+        {
+          // Verification Status
+          targets: 5,
+          render: function (data, type, full, meta) {
+            const verified = full['verified'];
+            const verifiedClass = verified === 'Parcial' ? 'bg-label-success' : 'bg-label-warning';
             return (
-              "<span class='text-truncate d-flex align-items-center text-heading'>" +
-              (roleBadgeObj[role] || '') + // Ensures badge exists for the role
-              role +
+              '<span class="badge ' +
+              verifiedClass +
+              '" text-capitalized>' +
+              verified +
               '</span>'
             );
           }
         },
         {
-          // User Status
-          targets: 4,
+          // Employment Status
+          targets: 6,
           render: function (data, type, full, meta) {
             const status = full['status'];
             return (
@@ -145,14 +159,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          // Created Date
-          targets: 5,
-          render: function (data, type, full, meta) {
-            const date = new Date(full['created_at']);
-            return '<span class="text-heading">' + date.toLocaleDateString('es-ES') + '</span>';
-          }
-        },
-        {
           targets: -1,
           title: 'Acciones',
           searchable: false,
@@ -160,10 +166,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
           render: (data, type, full, meta) => {
             return `
               <div class="d-flex align-items-center">
-                <a href="${userView}${full['id']}" class="btn btn-text-secondary rounded-pill waves-effect btn-icon">
+                <a href="${peopleView}${full['id']}" class="btn btn-text-secondary rounded-pill waves-effect btn-icon">
                   <i class="icon-base ti tabler-eye icon-22px"></i>
                 </a>
-                <a href="${userView}${full['id']}/edit" class="btn btn-text-secondary rounded-pill waves-effect btn-icon">
+                <a href="${peopleView}${full['id']}/edit" class="btn btn-text-secondary rounded-pill waves-effect btn-icon">
                   <i class="icon-base ti tabler-edit icon-22px"></i>
                 </a>
                 <a href="javascript:;" class="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record" data-id="${full['id']}" data-status="${full['status']}">
@@ -195,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Buscar Usuario',
+                placeholder: 'Buscar Persona',
                 text: '_INPUT_'
               }
             },
@@ -211,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                       text: `<span class="d-flex align-items-center"><i class="icon-base ti tabler-printer me-1"></i>Imprimir</span>`,
                       className: 'dropdown-item',
                       exportOptions: {
-                        columns: [2, 3, 4, 5],
+                        columns: [2, 3, 4, 5, 6],
                         format: {
                           body: function (inner, coldex, rowdex) {
                             if (inner.length <= 0) return inner;
@@ -263,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                       text: `<span class="d-flex align-items-center"><i class="icon-base ti tabler-file-text me-1"></i>CSV</span>`,
                       className: 'dropdown-item',
                       exportOptions: {
-                        columns: [2, 3, 4, 5],
+                        columns: [2, 3, 4, 5, 6],
                         format: {
                           body: function (inner, coldex, rowdex) {
                             if (inner.length <= 0) return inner;
@@ -300,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                       text: `<span class="d-flex align-items-center"><i class="icon-base ti tabler-file-spreadsheet me-1"></i>Excel</span>`,
                       className: 'dropdown-item',
                       exportOptions: {
-                        columns: [2, 3, 4, 5],
+                        columns: [2, 3, 4, 5, 6],
                         format: {
                           body: function (inner, coldex, rowdex) {
                             if (inner.length <= 0) return inner;
@@ -337,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                       text: `<span class="d-flex align-items-center"><i class="icon-base ti tabler-file-description me-1"></i>PDF</span>`,
                       className: 'dropdown-item',
                       exportOptions: {
-                        columns: [2, 3, 4, 5],
+                        columns: [2, 3, 4, 5, 6],
                         format: {
                           body: function (inner, coldex, rowdex) {
                             if (inner.length <= 0) return inner;
@@ -374,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                       text: `<i class="icon-base ti tabler-copy me-1"></i>Copiar`,
                       className: 'dropdown-item',
                       exportOptions: {
-                        columns: [2, 3, 4, 5],
+                        columns: [2, 3, 4, 5, 6],
                         format: {
                           body: function (inner, coldex, rowdex) {
                             if (inner.length <= 0) return inner;
@@ -409,10 +415,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   ]
                 },
                 {
-                  text: '<span class="d-flex align-items-center gap-2"><i class="icon-base ti tabler-plus icon-xs"></i> <span class="d-none d-sm-inline-block">Agregar Usuario</span></span>',
+                  text: '<span class="d-flex align-items-center gap-2"><i class="icon-base ti tabler-plus icon-xs"></i> <span class="d-none d-sm-inline-block">Agregar Persona</span></span>',
                   className: 'add-new btn btn-primary',
                   action: function() {
-                    window.location.href = '/users/create';
+                    window.location.href = '/people/create';
                   }
                 }
               ]
@@ -428,20 +434,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
       language: {
         sLengthMenu: '_MENU_',
         search: '',
-        searchPlaceholder: 'Buscar Usuario',
+        searchPlaceholder: 'Buscar Persona',
         paginate: {
           next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
           previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
           first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
           last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
         },
-        info: 'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
-        infoEmpty: 'Mostrando 0 a 0 de 0 usuarios',
-        infoFiltered: '(filtrado de _MAX_ usuarios totales)',
+        info: 'Mostrando _START_ a _END_ de _TOTAL_ personas',
+        infoEmpty: 'Mostrando 0 a 0 de 0 personas',
+        infoFiltered: '(filtrado de _MAX_ personas totales)',
         infoPostFix: '',
         loadingRecords: 'Cargando...',
-        zeroRecords: 'No se encontraron usuarios',
-        emptyTable: 'No hay usuarios disponibles',
+        zeroRecords: 'No se encontraron personas',
+        emptyTable: 'No hay personas disponibles',
       },
       // For responsive popup
       responsive: {
@@ -516,33 +522,33 @@ document.addEventListener('DOMContentLoaded', function (e) {
           });
         };
 
-        // Role filter
-        createFilter(3, '.user_role', 'UserRole', 'Seleccionar Rol');
-
         // Status filter
-        const statusContainer = document.querySelector('.user_status');
-        if (!statusContainer) {
-          console.warn('Status container not found: .user_status');
+        createFilter(6, '.people_status', 'PeopleStatus', 'Seleccionar Estado');
+
+        // Verification filter
+        const verificationContainer = document.querySelector('.people_verification');
+        if (!verificationContainer) {
+          console.warn('Verification container not found: .people_verification');
         } else {
-          const statusFilter = document.createElement('select');
-          statusFilter.id = 'FilterTransaction';
-          statusFilter.className = 'form-select text-capitalize';
-          statusFilter.innerHTML = '<option value="">Seleccionar Estado</option>';
-          statusContainer.appendChild(statusFilter);
+          const verificationFilter = document.createElement('select');
+          verificationFilter.id = 'FilterVerification';
+          verificationFilter.className = 'form-select text-capitalize';
+          verificationFilter.innerHTML = '<option value="">Seleccionar Verificación</option>';
+          verificationContainer.appendChild(verificationFilter);
           
-          statusFilter.addEventListener('change', () => {
-            const val = statusFilter.value ? `^${statusFilter.value}$` : '';
-            api.column(4).search(val, true, false).draw();
+          verificationFilter.addEventListener('change', () => {
+            const val = verificationFilter.value ? `^${verificationFilter.value}$` : '';
+            api.column(5).search(val, true, false).draw();
           });
 
-          const statusColumn = api.column(4);
-          const uniqueStatusData = Array.from(new Set(statusColumn.data().toArray())).sort();
-          uniqueStatusData.forEach(d => {
+          const verificationColumn = api.column(5);
+          const uniqueVerificationData = Array.from(new Set(verificationColumn.data().toArray())).sort();
+          uniqueVerificationData.forEach(d => {
             const option = document.createElement('option');
-            option.value = statusObj[d]?.title || d;
-            option.textContent = statusObj[d]?.title || d;
+            option.value = d;
+            option.textContent = d;
             option.className = 'text-capitalize';
-            statusFilter.appendChild(option);
+            verificationFilter.appendChild(option);
           });
         }
       }
@@ -558,39 +564,39 @@ document.addEventListener('DOMContentLoaded', function (e) {
       if (row) {
         // Buscar el elemento con data-id, puede estar en el enlace o en el ícono
         const deleteButton = event.target.closest('.delete-record');
-        const userId = deleteButton ? deleteButton.getAttribute('data-id') : null;
-        const userStatus = deleteButton ? deleteButton.getAttribute('data-status') : null;
-        console.log('User ID:', userId);
-        console.log('User Status:', userStatus);
+        const personId = deleteButton ? deleteButton.getAttribute('data-id') : null;
+        const personStatus = deleteButton ? deleteButton.getAttribute('data-status') : null;
+        console.log('Person ID:', personId);
+        console.log('Person Status:', personStatus);
         console.log('Base URL:', window.baseUrl);
         console.log('Delete button found:', deleteButton);
         
-        // Validar que tenemos el userId
-        if (!userId) {
-          console.error('No se pudo obtener el ID del usuario');
+        // Validar que tenemos el personId
+        if (!personId) {
+          console.error('No se pudo obtener el ID de la persona');
           Swal.fire({
             title: 'Error',
-            text: 'No se pudo obtener el ID del usuario. Inténtalo de nuevo.',
+            text: 'No se pudo obtener el ID de la persona. Inténtalo de nuevo.',
             icon: 'error',
             confirmButtonText: 'Aceptar'
           });
           return;
         }
         
-        // Determinar el mensaje según el estado del usuario
+        // Determinar el mensaje según el estado de la persona
         let title, text, confirmText;
         
-        if (userStatus === 'Inactivo') {
-          title = '¿Reactivar usuario?';
-          text = '¿Estás seguro de que deseas reactivar este usuario? El usuario podrá volver a ingresar al sistema.';
+        if (personStatus === 'Inactivo') {
+          title = '¿Reactivar persona?';
+          text = '¿Estás seguro de que deseas reactivar esta persona? La persona podrá volver a ser considerada para empleos.';
           confirmText = 'Sí, reactivar';
-        } else if (userStatus === 'Pendiente') {
-          title = '¿Desactivar usuario pendiente?';
-          text = '¿Estás seguro de que deseas desactivar este usuario? El usuario no podrá completar su registro ni ingresar al sistema.';
+        } else if (personStatus === 'Pendiente') {
+          title = '¿Desactivar persona pendiente?';
+          text = '¿Estás seguro de que deseas desactivar esta persona? La persona no podrá completar su registro ni ser considerada para empleos.';
           confirmText = 'Sí, desactivar';
         } else {
-          title = '¿Desactivar usuario activo?';
-          text = '¿Estás seguro de que deseas desactivar este usuario? El usuario no podrá ingresar al sistema hasta que sea reactivado.';
+          title = '¿Desactivar persona activa?';
+          text = '¿Estás seguro de que deseas desactivar esta persona? La persona no podrá ser considerada para empleos hasta que sea reactivada.';
           confirmText = 'Sí, desactivar';
         }
 
@@ -600,7 +606,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           text: text,
           icon: 'warning',
           showCancelButton: true,
-          confirmButtonColor: userStatus === 'Inactivo' ? '#28a745' : '#d33',
+          confirmButtonColor: personStatus === 'Inactivo' ? '#28a745' : '#d33',
           cancelButtonColor: '#3085d6',
           confirmButtonText: confirmText,
           cancelButtonText: 'Cancelar',
@@ -608,12 +614,12 @@ document.addEventListener('DOMContentLoaded', function (e) {
         }).then((result) => {
           if (result.isConfirmed) {
             // Determinar la acción y endpoint según el estado
-            const isReactivating = userStatus === 'Inactivo';
+            const isReactivating = personStatus === 'Inactivo';
             const endpoint = isReactivating ? 'reactivate' : 'deactivate';
             const actionText = isReactivating ? 'reactivar' : 'desactivar';
             
-            // Send PATCH request to deactivate/reactivate user
-            fetch(`${window.baseUrl || '/'}users/${userId}/${endpoint}`, {
+            // Send PATCH request to deactivate/reactivate person
+            fetch(`${window.baseUrl || '/'}people/${personId}/${endpoint}`, {
               method: 'PATCH',
               headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -623,24 +629,24 @@ document.addEventListener('DOMContentLoaded', function (e) {
             .then(response => {
               if (response.ok) {
                 // Recargar la tabla para mostrar el estado actualizado
-                dt_user.ajax.reload();
+                dt_people.ajax.reload();
                 // Show success message
                 Swal.fire({
-                  title: isReactivating ? '¡Usuario reactivado!' : '¡Usuario desactivado!',
-                  text: isReactivating ? 'El usuario ha sido reactivado exitosamente.' : 'El usuario ha sido desactivado exitosamente.',
+                  title: isReactivating ? '¡Persona reactivada!' : '¡Persona desactivada!',
+                  text: isReactivating ? 'La persona ha sido reactivada exitosamente.' : 'La persona ha sido desactivada exitosamente.',
                   icon: 'success',
                   timer: 3000,
                   showConfirmButton: false
                 });
               } else {
-                throw new Error(`Error al ${actionText} el usuario`);
+                throw new Error(`Error al ${actionText} la persona`);
               }
             })
             .catch(error => {
               console.error('Error:', error);
               Swal.fire({
                 title: 'Error',
-                text: `Error al ${actionText} el usuario. Inténtalo de nuevo.`,
+                text: `Error al ${actionText} la persona. Inténtalo de nuevo.`,
                 icon: 'error',
                 confirmButtonText: 'Aceptar'
               });
@@ -651,10 +657,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
 
     function bindDeleteEvent() {
-      const userListTable = document.querySelector('.datatables-users');
+      const peopleListTable = document.querySelector('.datatables-people');
       const modal = document.querySelector('.dtr-bs-modal');
 
-      if (userListTable && userListTable.classList.contains('collapsed')) {
+      if (peopleListTable && peopleListTable.classList.contains('collapsed')) {
         if (modal) {
           modal.addEventListener('click', function (event) {
             if (event.target.parentElement.classList.contains('delete-record') || event.target.classList.contains('delete-record')) {
@@ -665,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           });
         }
       } else {
-        const tableBody = userListTable?.querySelector('tbody');
+        const tableBody = peopleListTable?.querySelector('tbody');
         if (tableBody) {
           tableBody.addEventListener('click', function (event) {
             if (event.target.parentElement.classList.contains('delete-record') || event.target.classList.contains('delete-record')) {
@@ -682,9 +688,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
     // Select All functionality
     $(document).on('change', '#selectAll', function() {
       if (this.checked) {
-        dt_user.rows().select();
+        dt_people.rows().select();
       } else {
-        dt_user.rows().deselect();
+        dt_people.rows().deselect();
       }
     });
 
@@ -693,16 +699,16 @@ document.addEventListener('DOMContentLoaded', function (e) {
     $('#searchInput').on('keyup', function() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(function() {
-        dt_user.ajax.reload();
+        dt_people.ajax.reload();
       }, 500); // Debounce de 500ms
     });
 
-    $('#roleFilter').on('change', function() {
-      dt_user.ajax.reload();
+    $('#statusFilter').on('change', function() {
+      dt_people.ajax.reload();
     });
 
-    $('#statusFilter').on('change', function() {
-      dt_user.ajax.reload();
+    $('#verifiedFilter').on('change', function() {
+      dt_people.ajax.reload();
     });
 
     // Re-bind events when modal is shown or hidden
@@ -720,7 +726,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
   }
 
   // Filter form control to default size
-  // ? setTimeout used for user-list table initialization
+  // ? setTimeout used for people-list table initialization
   setTimeout(() => {
     const elementsToModify = [
       { selector: '.dt-buttons .btn', classToRemove: 'btn-secondary' },
@@ -752,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // Validation & Phone mask
   const phoneMaskList = document.querySelectorAll('.phone-mask'),
-    addNewUserForm = document.getElementById('addNewUserForm');
+    addNewPersonForm = document.getElementById('addNewPersonForm');
 
   // Phone Number
   if (phoneMaskList) {
@@ -771,9 +777,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }
   
-  // Add New User Form Validation
-  if (addNewUserForm) {
-    const fv = FormValidation.formValidation(addNewUserForm, {
+  // Add New Person Form Validation
+  if (addNewPersonForm) {
+    const fv = FormValidation.formValidation(addNewPersonForm, {
       fields: {
         name: {
           validators: {
@@ -782,44 +788,27 @@ document.addEventListener('DOMContentLoaded', function (e) {
             }
           }
         },
-        email: {
+        dni: {
           validators: {
             notEmpty: {
-              message: 'Por favor ingrese su email'
-            },
-            emailAddress: {
-              message: 'El valor no es una dirección de email válida'
+              message: 'Por favor ingrese la cédula'
             }
           }
         },
-        password: {
+        age: {
           validators: {
             notEmpty: {
-              message: 'Por favor ingrese una contraseña'
+              message: 'Por favor ingrese la edad'
             },
-            stringLength: {
-              min: 8,
-              message: 'La contraseña debe tener al menos 8 caracteres'
+            numeric: {
+              message: 'La edad debe ser un número válido'
             }
           }
         },
-        password_confirmation: {
+        status: {
           validators: {
             notEmpty: {
-              message: 'Por favor confirme la contraseña'
-            },
-            identical: {
-              compare: function () {
-                return addNewUserForm.querySelector('[name="password"]').value;
-              },
-              message: 'Las contraseñas no coinciden'
-            }
-          }
-        },
-        role: {
-          validators: {
-            notEmpty: {
-              message: 'Por favor seleccione un rol'
+              message: 'Por favor seleccione un estado'
             }
           }
         }

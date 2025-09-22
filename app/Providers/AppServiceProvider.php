@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\People;
+use App\Observers\PersonObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Vite;
 
@@ -20,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Registrar observers
+        People::observe(PersonObserver::class);
+        
         Vite::useStyleTagAttributes(function (?string $src, string $url, ?array $chunk, ?array $manifest) {
             if ($src !== null) {
                 return [

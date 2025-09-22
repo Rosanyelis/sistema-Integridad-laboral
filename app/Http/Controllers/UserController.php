@@ -32,27 +32,27 @@ class UserController extends Controller
         if ($request->ajax()) {
             $query = User::with('roles');
 
-        // Aplicar filtros
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        if ($request->has('role') && !empty($request->role)) {
-            $query->whereHas('roles', function($q) use ($request) {
-                $q->where('name', $request->role);
-            });
-        }
-
-        if ($request->has('status') && !empty($request->status)) {
-            if ($request->status === 'active') {
-                $query->where('is_active', 1);
-            } elseif ($request->status === 'inactive') {
-                $query->where('is_active', 0);
+            // Aplicar filtros
+            if ($request->has('search') && !empty($request->search)) {
+                $query->where(function($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
+                });
             }
-        }
+
+            if ($request->has('role') && !empty($request->role)) {
+                $query->whereHas('roles', function($q) use ($request) {
+                    $q->where('name', $request->role);
+                });
+            }
+
+            if ($request->has('status') && !empty($request->status)) {
+                if ($request->status === 'active') {
+                    $query->where('is_active', 1);
+                } elseif ($request->status === 'inactive') {
+                    $query->where('is_active', 0);
+                }
+            }
 
             $users = $query->get();
 
