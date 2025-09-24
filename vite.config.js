@@ -68,6 +68,7 @@ export default defineConfig({
         'resources/js/roles-create.js', // Processing Roles Create JS File
         'resources/js/roles-edit.js', // Processing Roles Edit JS File
         'resources/js/people-index.js', // Processing People Index DataTable JS File
+        'resources/js/people-create.js', // Processing People Create Form JS File
         ...CoreScssFiles,
         ...LibsScssFiles,
         ...LibsCssFiles,

@@ -28,12 +28,6 @@ class UpdatePeopleRequest extends FormRequest
 
         return [
             // Datos de Identificación
-            'code' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('people', 'code')->ignore($personId)
-            ],
             'name' => [
                 'required',
                 'string',
@@ -202,8 +196,6 @@ class UpdatePeopleRequest extends FormRequest
     {
         return [
             // Datos de Identificación
-            'code.required' => 'El código es obligatorio.',
-            'code.unique' => 'El código ya está en uso.',
             'name.required' => 'El nombre es obligatorio.',
             'name.min' => 'El nombre debe tener al menos 2 caracteres.',
             'last_name.required' => 'Los apellidos son obligatorios.',
@@ -261,7 +253,6 @@ class UpdatePeopleRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'code' => 'código',
             'name' => 'nombre',
             'last_name' => 'apellidos',
             'dni' => 'cédula',

@@ -69,7 +69,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
   Route::get('people', [PeopleController::class, 'index'])->name('people.index');
   Route::get('people/create', [PeopleController::class, 'create'])->name('people.create');
   Route::post('people', [PeopleController::class, 'store'])->name('people.store');
-  Route::get('people/{id}', [PeopleController::class, 'show'])->name('people.show');
+  Route::get('people/{id}/show', [PeopleController::class, 'show'])->name('people.show');
   Route::post('people/update-status', [PeopleController::class, 'updateStatus'])->name('people.update-status');
   Route::post('people/export-excel', [PeopleController::class, 'exportExcel'])->name('people.export-excel');
   Route::post('people/export-pdf', [PeopleController::class, 'exportPdf'])->name('people.export-pdf');

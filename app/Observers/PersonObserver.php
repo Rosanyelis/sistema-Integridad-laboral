@@ -2,9 +2,9 @@
 
 namespace App\Observers;
 
-use Log;
 use Carbon\Carbon;
 use App\Models\People;
+use Illuminate\Support\Facades\Log;
 
 class PersonObserver
 {
@@ -57,7 +57,7 @@ class PersonObserver
     public function created(People $person): void
     {
         // Log para debugging (opcional)
-        Log::info("Persona creada con código único: {$person->code_unique}", [
+        \Illuminate\Support\Facades\Log::info("Persona creada con código único: {$person->code_unique}", [
             'person_id' => $person->id,
             'code_unique' => $person->code_unique,
             'created_at' => $person->created_at

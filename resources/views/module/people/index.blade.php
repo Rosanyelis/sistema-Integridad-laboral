@@ -27,6 +27,8 @@
 
 @section('page-script')
 @vite('resources/js/people-index.js')
+
+
 @endsection
 
 @section('content')

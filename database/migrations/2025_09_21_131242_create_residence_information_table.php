@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('residence_information', function (Blueprint $table) {
             $table->id();
             $table->foreignId('person_id')->constrained('people')->onDelete('cascade');
-            $table->string('province')->nullable()->comment('Provincia');
-            $table->string('municipality')->nullable()->comment('Municipio');
-            $table->string('sector')->nullable()->comment('Sector');
+            $table->foreignId('province_id')->constrained('provinces')->onDelete('cascade');
+            $table->foreignId('municipality_id')->constrained('municipalities')->onDelete('cascade');
+            $table->foreignId('sector_id')->constrained('sectors')->onDelete('cascade');
             $table->string('residential_complex')->nullable()->comment('Complejo residencial');
             $table->string('building')->nullable()->comment('Edificio');
             $table->string('apartment')->nullable()->comment('Apartamento');

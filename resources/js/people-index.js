@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // Variable declaration for table
   const dt_people_table = document.querySelector('.datatables-people'),
-    peopleView = (window.baseUrl || '/') + 'people/',
+    peopleView = (window.baseUrl || window.location.origin + '/') + 'people/',
     statusObj = {
       'Pendiente': { title: 'Pendiente', class: 'bg-label-warning' },
       'Disponible': { title: 'Disponible', class: 'bg-label-info' },
@@ -27,6 +27,12 @@ document.addEventListener('DOMContentLoaded', function (e) {
       'Aplica': { title: 'Aplica', class: 'bg-label-info' },
       'No Aplica': { title: 'No Aplica', class: 'bg-label-secondary' }
     };
+  
+  // Debug: Log the peopleView URL
+  console.log('People View URL:', peopleView);
+  console.log('Window baseUrl:', window.baseUrl);
+  console.log('Window location origin:', window.location.origin);
+  
   var select2 = $('.select2');
 
   if (select2.length) {
@@ -166,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           render: (data, type, full, meta) => {
             return `
               <div class="d-flex align-items-center">
-                <a href="${peopleView}${full['id']}" class="btn btn-text-secondary rounded-pill waves-effect btn-icon">
+                <a href="${peopleView}${full['id']}/show" class="btn btn-text-secondary rounded-pill waves-effect btn-icon">
                   <i class="icon-base ti tabler-eye icon-22px"></i>
                 </a>
                 <a href="${peopleView}${full['id']}/edit" class="btn btn-text-secondary rounded-pill waves-effect btn-icon">
@@ -522,35 +528,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
           });
         };
 
-        // Status filter
-        createFilter(6, '.people_status', 'PeopleStatus', 'Seleccionar Estado');
-
-        // Verification filter
-        const verificationContainer = document.querySelector('.people_verification');
-        if (!verificationContainer) {
-          console.warn('Verification container not found: .people_verification');
-        } else {
-          const verificationFilter = document.createElement('select');
-          verificationFilter.id = 'FilterVerification';
-          verificationFilter.className = 'form-select text-capitalize';
-          verificationFilter.innerHTML = '<option value="">Seleccionar Verificación</option>';
-          verificationContainer.appendChild(verificationFilter);
-          
-          verificationFilter.addEventListener('change', () => {
-            const val = verificationFilter.value ? `^${verificationFilter.value}$` : '';
-            api.column(5).search(val, true, false).draw();
-          });
-
-          const verificationColumn = api.column(5);
-          const uniqueVerificationData = Array.from(new Set(verificationColumn.data().toArray())).sort();
-          uniqueVerificationData.forEach(d => {
-            const option = document.createElement('option');
-            option.value = d;
-            option.textContent = d;
-            option.className = 'text-capitalize';
-            verificationFilter.appendChild(option);
-          });
-        }
+        // Los filtros ya están definidos en el HTML, no necesitamos crear filtros dinámicos adicionales
+        // Los filtros existentes (#statusFilter y #verifiedFilter) ya están conectados a la funcionalidad
       }
     });
 

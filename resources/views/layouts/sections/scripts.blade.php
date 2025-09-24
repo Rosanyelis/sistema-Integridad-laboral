@@ -22,7 +22,7 @@
 <!-- BEGIN: Page JS-->
 @yield('page-script')
 <!-- END: Page JS-->
-
+ 
 <!-- app JS -->
 @vite(['resources/js/app.js'])
 <!-- END: app JS-->

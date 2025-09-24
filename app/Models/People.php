@@ -15,7 +15,6 @@ class People extends Model
         'user_id',
         'profile_photo',
         'code_unique',
-        'code',
         'name',
         'last_name',
         'dni',
@@ -164,7 +163,7 @@ class People extends Model
      */
     public function residenceInformation()
     {
-        return $this->hasOne(ResidenceInformation::class);
+        return $this->hasOne(ResidenceInformation::class, 'person_id');
     }
 
     /**
@@ -173,7 +172,7 @@ class People extends Model
      */
     public function personalReferences()
     {
-        return $this->hasMany(PersonalReference::class);
+        return $this->hasMany(PersonalReference::class, 'person_id');
     }
 
     /**
@@ -182,7 +181,7 @@ class People extends Model
      */
     public function educationalSkills()
     {
-        return $this->hasMany(EducationalSkills::class);
+        return $this->hasMany(EducationalSkill::class, 'person_id');
     }
 
     /**
@@ -191,7 +190,7 @@ class People extends Model
      */
     public function workExperiences()
     {
-        return $this->hasMany(WorkExperiences::class);
+        return $this->hasMany(WorkExperience::class, 'person_id');
     }
 
     /**
@@ -200,7 +199,7 @@ class People extends Model
      */
     public function aspirations()
     {
-        return $this->hasOne(Aspirations::class);
+        return $this->hasOne(Aspiration::class, 'person_id');
     }
 
     /**

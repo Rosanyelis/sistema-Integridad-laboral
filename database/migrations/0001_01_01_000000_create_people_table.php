@@ -18,7 +18,6 @@ return new class extends Migration
             $table->id();
             $table->string('code_unique')->unique()->comment('Código único para la persona entre numero consecutivo y fecha 01-08092025');
             $table->string('profile_photo')->nullable()->comment('Foto de perfil');
-            $table->string('code')->unique()->comment('Código único para la persona');
             $table->string('name')->comment('Nombres');
             $table->string('last_name')->comment('Apellidos');
             $table->string('dni')->unique()->comment('Cedula');

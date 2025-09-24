@@ -124,7 +124,7 @@ class PeopleController extends Controller
                 ->with('success', 'Personal creado exitosamente.');
 
         } catch (\Exception $e) {
-            Log::error('Error en PeopleController@store: ' . $e->getMessage());
+            Log::info('Error en PeopleController@store: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'Error al crear el personal: ' . $e->getMessage())
                 ->withInput();
@@ -150,6 +150,7 @@ class PeopleController extends Controller
 
             return view('module.people.show', compact('person'));
         } catch (\Exception $e) {
+            Log::error('Error en PeopleController@show: ' . $e->getMessage());
             return redirect()->route('people.index')
                 ->with('error', 'Persona no encontrada');
         }
