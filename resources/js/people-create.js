@@ -135,20 +135,49 @@
       }
       
       // Aplicar formato: 000-0000000-0
-      if (value.length >= 1) {
-        value = value.substring(0, 3) + '-' + value.substring(3);
-      }
-      if (value.length >= 8) {
-        value = value.substring(0, 8) + '-' + value.substring(8);
+      let formattedValue = '';
+      
+      if (value.length > 0) {
+        // Primeros 3 dígitos
+        formattedValue = value.substring(0, 3);
+        
+        if (value.length > 3) {
+          // Agregar primer guión y siguientes 7 dígitos
+          formattedValue += '-' + value.substring(3, 10);
+          
+          if (value.length > 10) {
+            // Agregar segundo guión y último dígito
+            formattedValue += '-' + value.substring(10, 11);
+          }
+        }
       }
       
-      e.target.value = value;
+      e.target.value = formattedValue;
     });
 
     // Permitir solo números y guiones en el campo
     input.addEventListener('keypress', function(e) {
       const char = String.fromCharCode(e.which);
       if (!/[0-9]/.test(char) && e.which !== 8 && e.which !== 0) {
+        e.preventDefault();
+      }
+    });
+
+    // Manejar teclas de navegación y eliminación
+    input.addEventListener('keydown', function(e) {
+      // Permitir teclas de navegación, eliminación y edición
+      const allowedKeys = [8, 9, 27, 46, 37, 38, 39, 40]; // backspace, tab, escape, delete, arrow keys
+      if (allowedKeys.includes(e.keyCode) || 
+          (e.keyCode === 65 && e.ctrlKey) || // Ctrl+A
+          (e.keyCode === 67 && e.ctrlKey) || // Ctrl+C
+          (e.keyCode === 86 && e.ctrlKey) || // Ctrl+V
+          (e.keyCode === 88 && e.ctrlKey) || // Ctrl+X
+          (e.keyCode === 90 && e.ctrlKey)) { // Ctrl+Z
+        return;
+      }
+      
+      // Permitir solo números
+      if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
         e.preventDefault();
       }
     });
@@ -162,26 +191,55 @@
     input.addEventListener('input', function(e) {
       let value = e.target.value.replace(/\D/g, ''); // Solo números
       
-      // Limitar a 10 dígitos
-      if (value.length > 10) {
-        value = value.substring(0, 10);
+      // Limitar a 11 dígitos (4-3-4 = 11 dígitos total)
+      if (value.length > 11) {
+        value = value.substring(0, 11);
       }
       
       // Aplicar formato: 0000-000-0000
-      if (value.length >= 4) {
-        value = value.substring(0, 4) + '-' + value.substring(4);
-      }
-      if (value.length >= 8) {
-        value = value.substring(0, 8) + '-' + value.substring(8);
+      let formattedValue = '';
+      
+      if (value.length > 0) {
+        // Primeros 4 dígitos
+        formattedValue = value.substring(0, 4);
+        
+        if (value.length > 4) {
+          // Agregar primer guión y siguientes 3 dígitos
+          formattedValue += '-' + value.substring(4, 7);
+          
+          if (value.length > 7) {
+            // Agregar segundo guión y últimos 4 dígitos
+            formattedValue += '-' + value.substring(7, 11);
+          }
+        }
       }
       
-      e.target.value = value;
+      e.target.value = formattedValue;
     });
 
     // Permitir solo números y guiones en el campo
     input.addEventListener('keypress', function(e) {
       const char = String.fromCharCode(e.which);
       if (!/[0-9]/.test(char) && e.which !== 8 && e.which !== 0) {
+        e.preventDefault();
+      }
+    });
+
+    // Manejar teclas de navegación y eliminación
+    input.addEventListener('keydown', function(e) {
+      // Permitir teclas de navegación, eliminación y edición
+      const allowedKeys = [8, 9, 27, 46, 37, 38, 39, 40]; // backspace, tab, escape, delete, arrow keys
+      if (allowedKeys.includes(e.keyCode) || 
+          (e.keyCode === 65 && e.ctrlKey) || // Ctrl+A
+          (e.keyCode === 67 && e.ctrlKey) || // Ctrl+C
+          (e.keyCode === 86 && e.ctrlKey) || // Ctrl+V
+          (e.keyCode === 88 && e.ctrlKey) || // Ctrl+X
+          (e.keyCode === 90 && e.ctrlKey)) { // Ctrl+Z
+        return;
+      }
+      
+      // Permitir solo números
+      if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
         e.preventDefault();
       }
     });
