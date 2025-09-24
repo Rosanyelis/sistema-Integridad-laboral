@@ -43,13 +43,13 @@ class StorePeopleRequest extends FormRequest
                 'string',
                 'max:255',
                 'unique:people,dni',
-                'regex:/^[0-9]{7,10}$/'
+                'regex:/^\d{3}-\d{7}-\d{1}$/'
             ],
             'previous_dni' => [
                 'nullable',
                 'string',
                 'max:255',
-                'regex:/^[0-9]{7,10}$/'
+                'regex:/^\d{3}-\d{7}-\d{1}$/'
             ],
 
             // Información Personal
@@ -94,7 +94,7 @@ class StorePeopleRequest extends FormRequest
                 'required',
                 'string',
                 'max:20',
-                'regex:/^[0-9+\-\s()]{7,20}$/'
+                'regex:/^\d{4}-\d{3}-\d{4}$/'
             ],
             'home_phone' => [
                 'nullable',
@@ -200,8 +200,8 @@ class StorePeopleRequest extends FormRequest
             'last_name.min' => 'Los apellidos deben tener al menos 2 caracteres.',
             'dni.required' => 'La cédula es obligatoria.',
             'dni.unique' => 'La cédula ya está registrada.',
-            'dni.regex' => 'La cédula debe contener entre 7 y 10 dígitos.',
-            'previous_dni.regex' => 'La cédula anterior debe contener entre 7 y 10 dígitos.',
+            'dni.regex' => 'La cédula debe tener el formato 000-0000000-0.',
+            'previous_dni.regex' => 'La cédula anterior debe tener el formato 000-0000000-0.',
 
             // Información Personal
             'birth_date.required' => 'La fecha de nacimiento es obligatoria.',
@@ -219,7 +219,7 @@ class StorePeopleRequest extends FormRequest
             // Información de Contacto
             'zip_code.regex' => 'El código postal debe contener entre 4 y 6 dígitos.',
             'cell_phone.required' => 'El teléfono celular es obligatorio.',
-            'cell_phone.regex' => 'El formato del teléfono celular no es válido.',
+            'cell_phone.regex' => 'El teléfono celular debe tener el formato 0000-000-0000.',
             'home_phone.regex' => 'El formato del teléfono fijo no es válido.',
 
             // Contacto Electrónico
@@ -288,9 +288,11 @@ class StorePeopleRequest extends FormRequest
         $this->merge([
             'name' => trim($this->name),
             'last_name' => trim($this->last_name),
-            'dni' => preg_replace('/[^0-9]/', '', $this->dni),
-            'previous_dni' => $this->previous_dni ? preg_replace('/[^0-9]/', '', $this->previous_dni) : null,
-            'cell_phone' => preg_replace('/[^0-9+\-\s()]/', '', $this->cell_phone),
+            // Mantener el formato de cédula con guiones
+            'dni' => $this->dni,
+            'previous_dni' => $this->previous_dni,
+            // Mantener el formato de teléfono con guiones
+            'cell_phone' => $this->cell_phone,
             'home_phone' => $this->home_phone ? preg_replace('/[^0-9+\-\s()]/', '', $this->home_phone) : null,
             'emergency_contact_phone' => preg_replace('/[^0-9+\-\s()]/', '', $this->emergency_contact_phone),
             'zip_code' => $this->zip_code ? preg_replace('/[^0-9]/', '', $this->zip_code) : null,
