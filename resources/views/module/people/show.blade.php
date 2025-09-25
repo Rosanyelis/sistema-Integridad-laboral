@@ -40,30 +40,30 @@ $configData = Helper::appClasses();
         <li class="nav-item">
           <a class="nav-link active" href="javascript:void(0);">
             <i class="icon-base ti tabler-users icon-sm me-1_5"></i> 
-            Perfil
+            Inf. Personal
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="javascript:void(0);">
             <i class="icon-base ti tabler-lock icon-sm me-1_5"></i> 
-            Residencia
+            Inf. Residencial
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="javascript:void(0);">
             <i class="icon-base ti tabler-bookmark icon-sm me-1_5"></i> 
-            Referencias
+            Referencias Personales
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="javascript:void(0);">
             <i class="icon-base ti tabler-bell icon-sm me-1_5"></i> 
-            Educación
+            Hab. Educativas
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="javascript:void(0);">
-            <i class="icon-base ti tabler-link icon-sm me-1_5"></i> 
+            <i class="icon-base ti tabler-bell icon-sm me-1_5"></i> 
             Experiencia Laboral
           </a>
         </li>
@@ -71,6 +71,12 @@ $configData = Helper::appClasses();
           <a class="nav-link" href="javascript:void(0);">
             <i class="icon-base ti tabler-link icon-sm me-1_5"></i> 
             Aspiraciones
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0);">
+            <i class="icon-base ti tabler-link icon-sm me-1_5"></i> 
+            Disponibilidad
           </a>
         </li>
       </ul>
@@ -82,157 +88,230 @@ $configData = Helper::appClasses();
           <img src="{{ asset('assets/img/avatars/1.png') }}" alt="user-avatar" class="d-block w-px-100 h-px-100 rounded" id="uploadedAvatar" />
           <div class="button-wrapper">
             <label for="upload" class="btn btn-primary me-3 mb-4" tabindex="0">
-              <span class="d-none d-sm-block">Upload new photo</span>
+              <span class="d-none d-sm-block">Subir foto del candidato</span>
               <i class="icon-base ti tabler-upload d-block d-sm-none"></i>
               <input type="file" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg" />
             </label>
             <button type="button" class="btn btn-label-secondary account-image-reset mb-4">
               <i class="icon-base ti tabler-reset d-block d-sm-none"></i>
-              <span class="d-none d-sm-block">Reset</span>
+              <span class="d-none d-sm-block">Resetear</span>
             </button>
 
-            <div>Allowed JPG, GIF or PNG. Max size of 800K</div>
+            <div>Permitido JPG, GIF o PNG. Tamaño máximo de 800K</div>
           </div>
         </div>
       </div>
       <div class="card-body pt-4">
-        <form id="formAccountSettings" method="POST" onsubmit="return false">
-          <div class="row gy-4 gx-6 mb-6">
-            <div class="col-md-6 form-control-validation">
-              <label for="firstName" class="form-label">First Name</label>
-              <input class="form-control" type="text" id="firstName" name="firstName" value="John" autofocus />
+        <form id="formAccountSettings" action="{{ route('people.store') }}" method="POST" enctype="multipart/form-data">
+          <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+              <label for="name" class="form-label">*NOMBRE(S)</label>
+              <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror" 
+                     id="name" name="name" value="{{ old('name') }}" >
+              @error('name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
-            <div class="col-md-6 form-control-validation">
-              <label for="lastName" class="form-label">Last Name</label>
-              <input class="form-control" type="text" name="lastName" id="lastName" value="Doe" />
+            <div class="col-md-3 mb-3">
+              <label for="last_name" class="form-label">*APELLIDOS</label>
+              <input type="text" class="form-control form-control-sm @error('last_name') is-invalid @enderror" 
+                     id="last_name" name="last_name" value="{{ old('last_name') }}" >
+              @error('last_name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
-            <div class="col-md-6">
-              <label for="email" class="form-label">E-mail</label>
-              <input class="form-control" type="text" id="email" name="email" value="john.doe@example.com" placeholder="john.doe@example.com" />
+            <div class="col-md-2 mb-3">
+              <label for="dni" class="form-label">*CÉDULA</label>
+              <input type="text" class="form-control form-control-sm @error('dni') is-invalid @enderror" 
+                     id="dni" name="dni" value="{{ old('dni') }}" >
+              @error('dni')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
-            <div class="col-md-6">
-              <label for="organization" class="form-label">Organization</label>
-              <input type="text" class="form-control" id="organization" name="organization" value="{{ config('variables.creatorName') }}" />
+            <div class="col-md-2 mb-3">
+              <label for="previous_dni" class="form-label">CÉDULA ANT.</label>
+              <input type="text" class="form-control form-control-sm @error('previous_dni') is-invalid @enderror" 
+                     id="previous_dni" name="previous_dni" value="{{ old('previous_dni') }}">
+              @error('previous_dni')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
-            <div class=" col-md-6">
-              <label class="form-label" for="phoneNumber">Phone Number</label>
-              <div class="input-group input-group-merge">
-                <span class="input-group-text">US (+1)</span>
-                <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="202 555 0111" />
+            <div class="col-md-2 mb-3">
+              <label for="birth_date" class="form-label">*FECHA NAC</label>
+              <input type="text" class="form-control form-control-sm flatpickr-input @error('birth_date') is-invalid @enderror" 
+              id="flatpickr-date" name="birth_date" value="{{ old('birth_date') }}" >
+              @error('birth_date')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-1 mb-3">
+              <label for="age" class="form-label">EDAD</label>
+              <input type="number" class="form-control form-control-sm @error('age') is-invalid @enderror" 
+                     id="age" name="age" value="{{ old('age') }}" readonly>
+              @error('age')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="marital_status" class="form-label">ESTADO CIVIL</label>
+              <select class="form-select form-select-sm @error('marital_status') is-invalid @enderror" 
+                      id="marital_status" name="marital_status">
+                <option value="">Seleccionar Estado Civil</option>
+                @foreach(\App\Enums\MaritalStatus::getOptions() as $value => $label)
+                  <option value="{{ $value }}" {{ old('marital_status') == $value ? 'selected' : '' }}>
+                    {{ $label }}
+                  </option>
+                @endforeach
+              </select>
+              @error('marital_status')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="birth_place" class="form-label">*LUGAR DE NACIMIENTO</label>
+              <input type="text" class="form-control form-control-sm @error('birth_place') is-invalid @enderror" 
+                     id="birth_place" name="birth_place" value="{{ old('birth_place') }}" >
+              @error('birth_place')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="country" class="form-label">*PAÍS</label>
+              <input type="text" class="form-control form-control-sm @error('country') is-invalid @enderror" 
+                     id="country" name="country" value="{{ old('country') }}" >
+              @error('country')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="zip_code" class="form-label">COD. POSTAL</label>
+              <input type="text" class="form-control form-control-sm @error('zip_code') is-invalid @enderror" 
+                     id="zip_code" name="zip_code" value="{{ old('zip_code') }}">
+              @error('zip_code')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="cell_phone" class="form-label">*TELÉFONO CELULAR</label>
+              <input type="text" class="form-control form-control-sm @error('cell_phone') is-invalid @enderror" 
+                      id="cell_phone" name="cell_phone" value="{{ old('cell_phone') }}" >
+              @error('cell_phone')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="home_phone" class="form-label">TELÉFONO FIJO</label>
+              <input type="text" class="form-control form-control-sm @error('home_phone') is-invalid @enderror" 
+                      id="home_phone" name="home_phone" value="{{ old('home_phone') }}">
+              @error('home_phone')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="email" class="form-label">CORREO ELECTRÓNICO</label>
+              <input type="email" class="form-control form-control-sm @error('email') is-invalid @enderror" 
+                     id="email" name="email" value="{{ old('email') }}">
+              @error('email')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="social_media_1" class="form-label">RED SOCIAL 1</label>
+              <input type="text" class="form-control form-control-sm @error('social_media_1') is-invalid @enderror" 
+                     id="social_media_1" name="social_media_1" value="{{ old('social_media_1') }}">
+              @error('social_media_1')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="social_media_2" class="form-label">RED SOCIAL 2</label>
+              <input type="text" class="form-control form-control-sm @error('social_media_2') is-invalid @enderror" 
+                     id="social_media_2" name="social_media_2" value="{{ old('social_media_2') }}">
+              @error('social_media_2')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="blood_type" class="form-label">TIPO DE SANGRE</label>
+              <input type="text" class="form-control form-control-sm @error('blood_type') is-invalid @enderror" 
+                     id="blood_type" name="blood_type" value="{{ old('blood_type') }}">
+              @error('blood_type')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="medication_allergies" class="form-label">ALÉRGICO A MEDICAMENTO</label>
+              <input type="text" class="form-control form-control-sm @error('medication_allergies') is-invalid @enderror" 
+                        id="medication_allergies" name="medication_allergies" value="{{ old('medication_allergies') }}">
+              @error('medication_allergies')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="illnesses" class="form-label">ENFERMEDADES QUE PADECE</label>
+              <input type="text" class="form-control form-control-sm @error('illnesses') is-invalid @enderror" 
+                        id="illnesses" name="illnesses" value="{{ old('illnesses') }}">
+              @error('illnesses')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="emergency_contact_name" class="form-label">*NOMBRE CONTACTO EMERGENCIA</label>
+              <input type="text" class="form-control form-control-sm @error('emergency_contact_name') is-invalid @enderror" 
+                     id="emergency_contact_name" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}" >
+              @error('emergency_contact_name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="emergency_contact_phone" class="form-label">*TELÉFONO EMERGENCIA</label>
+              <input type="text" class="form-control form-control-sm @error('emergency_contact_phone') is-invalid @enderror" 
+                     id="emergency_contact_phone" name="emergency_contact_phone" value="{{ old('emergency_contact_phone') }}" >
+              @error('emergency_contact_phone')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="other_emergency_contacts" class="form-label">OTROS CONTACTOS DE EMERGENCIA</label>
+              <input type="text" class="form-control form-control-sm @error('other_emergency_contacts') is-invalid @enderror" 
+                        id="other_emergency_contacts" name="other_emergency_contacts" value="{{ old('other_emergency_contacts') }}">
+              @error('other_emergency_contacts')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="employment_status" class="form-label">*ESTADO LABORAL</label>
+              <div class="flex flex-wrap gap-2">
+              @foreach(\App\Enums\EmploymentStatus::getOptions() as $value => $label)
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" value="{{ $value }}" id="employment_status" name="employment_status" {{ old('employment_status') == $value ? 'checked' : '' }}>
+                <label class="form-check-label" for="employment_status"> {{ $label }} </label>
               </div>
-            </div>
-            <div class="col-md-6">
-              <label for="address" class="form-label">Address</label>
-              <input type="text" class="form-control" id="address" name="address" placeholder="Address" />
-            </div>
-            <div class="col-md-6">
-              <label for="state" class="form-label">State</label>
-              <input class="form-control" type="text" id="state" name="state" placeholder="California" />
-            </div>
-            <div class="col-md-6">
-              <label for="zipCode" class="form-label">Zip Code</label>
-              <input type="text" class="form-control" id="zipCode" name="zipCode" placeholder="231465" maxlength="6" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="country">Country</label>
-              <select id="country" class="select2 form-select">
-                <option value="">Select</option>
-                <option value="Australia">Australia</option>
-                <option value="Bangladesh">Bangladesh</option>
-                <option value="Belarus">Belarus</option>
-                <option value="Brazil">Brazil</option>
-                <option value="Canada">Canada</option>
-                <option value="China">China</option>
-                <option value="France">France</option>
-                <option value="Germany">Germany</option>
-                <option value="India">India</option>
-                <option value="Indonesia">Indonesia</option>
-                <option value="Israel">Israel</option>
-                <option value="Italy">Italy</option>
-                <option value="Japan">Japan</option>
-                <option value="Korea">Korea, Republic of</option>
-                <option value="Mexico">Mexico</option>
-                <option value="Philippines">Philippines</option>
-                <option value="Russia">Russian Federation</option>
-                <option value="South Africa">South Africa</option>
-                <option value="Thailand">Thailand</option>
-                <option value="Turkey">Turkey</option>
-                <option value="Ukraine">Ukraine</option>
-                <option value="United Arab Emirates">United Arab Emirates</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="United States">United States</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label for="language" class="form-label">Language</label>
-              <select id="language" class="select2 form-select">
-                <option value="">Select Language</option>
-                <option value="en">English</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="pt">Portuguese</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label for="timeZones" class="form-label">Timezone</label>
-              <select id="timeZones" class="select2 form-select">
-                <option value="">Select Timezone</option>
-                <option value="-12">(GMT-12:00) International Date Line West</option>
-                <option value="-11">(GMT-11:00) Midway Island, Samoa</option>
-                <option value="-10">(GMT-10:00) Hawaii</option>
-                <option value="-9">(GMT-09:00) Alaska</option>
-                <option value="-8">(GMT-08:00) Pacific Time (US & Canada)</option>
-                <option value="-8">(GMT-08:00) Tijuana, Baja California</option>
-                <option value="-7">(GMT-07:00) Arizona</option>
-                <option value="-7">(GMT-07:00) Chihuahua, La Paz, Mazatlan</option>
-                <option value="-7">(GMT-07:00) Mountain Time (US & Canada)</option>
-                <option value="-6">(GMT-06:00) Central America</option>
-                <option value="-6">(GMT-06:00) Central Time (US & Canada)</option>
-                <option value="-6">(GMT-06:00) Guadalajara, Mexico City, Monterrey</option>
-                <option value="-6">(GMT-06:00) Saskatchewan</option>
-                <option value="-5">(GMT-05:00) Bogota, Lima, Quito, Rio Branco</option>
-                <option value="-5">(GMT-05:00) Eastern Time (US & Canada)</option>
-                <option value="-5">(GMT-05:00) Indiana (East)</option>
-                <option value="-4">(GMT-04:00) Atlantic Time (Canada)</option>
-                <option value="-4">(GMT-04:00) Caracas, La Paz</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label for="currency" class="form-label">Currency</label>
-              <select id="currency" class="select2 form-select">
-                <option value="">Select Currency</option>
-                <option value="usd">USD</option>
-                <option value="euro">Euro</option>
-                <option value="pound">Pound</option>
-                <option value="bitcoin">Bitcoin</option>
-              </select>
+              @endforeach
+              </div>
+              @error('employment_status')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
           </div>
-          <div class="mt-2">
-            <button type="submit" class="btn btn-primary me-3">Save changes</button>
-            <button type="reset" class="btn btn-label-secondary">Cancel</button>
+          <!-- Botones de Acción -->
+          <div class="row">
+            <div class="col-12">
+              <div class="d-flex justify-content-end gap-2">
+                <a href="{{ route('people.index') }}" class="btn btn-outline-secondary">
+                  <i class="icon-base ti tabler-x me-1"></i>
+                  Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                  <i class="icon-base ti tabler-check me-1"></i>
+                  Guardar Personal
+                </button>
+              </div>
+            </div>
           </div>
         </form>
       </div>
       <!-- /Account -->
-    </div>
-    <div class="card">
-      <h5 class="card-header">Delete Account</h5>
-      <div class="card-body">
-        <div class="mb-6 col-12 mb-0">
-          <div class="alert alert-warning">
-            <h5 class="alert-heading mb-1">Are you sure you want to delete your account?</h5>
-            <p class="mb-0">Once you delete your account, there is no going back. Please be certain.</p>
-          </div>
-        </div>
-        <form id="formAccountDeactivation" onsubmit="return false">
-          <div class="form-check my-8">
-            <input class="form-check-input" type="checkbox" name="accountActivation" id="accountActivation" />
-            <label class="form-check-label" for="accountActivation">I confirm my account deactivation</label>
-          </div>
-          <button type="submit" class="btn btn-danger deactivate-account" disabled>Deactivate Account</button>
-        </form>
-      </div>
     </div>
   </div>
 </div>

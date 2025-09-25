@@ -138,6 +138,7 @@
         <tr>
           <th></th>
           <th><input type="checkbox" class="form-check-input" id="selectAll"></th>
+          <th>Código</th>
           <th>Nombre</th>
           <th>Cédula</th>
           <th>Edad</th>

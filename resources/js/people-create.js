@@ -17,6 +17,7 @@
     initializeImageUpload();
     initializeAgeCalculation();
     initializeInputMasks();
+    initializeDynamicSelects();
   });
 
   /**
@@ -118,6 +119,12 @@
     const cellPhoneInput = document.getElementById('cell_phone');
     if (cellPhoneInput) {
       applyPhoneMask(cellPhoneInput);
+    }
+
+    // Máscara para teléfono de emergencia (0000-000-0000)
+    const emergencyPhoneInput = document.getElementById('emergency_contact_phone');
+    if (emergencyPhoneInput) {
+      applyPhoneMask(emergencyPhoneInput);
     }
   }
 
@@ -298,6 +305,195 @@
   }
 
   /**
+   * Inicializar selects dinámicos para provincia, municipio y sector
+   */
+  function initializeDynamicSelects() {
+    console.log('Inicializando selects dinámicos...');
+    // Esperar a que Select2 se inicialice
+    setTimeout(() => {
+      const provinceSelect = $('#province_id');
+      const municipalitySelect = $('#municipality_id');
+      const sectorSelect = $('#sector_id');
+
+      console.log('Selects encontrados:', {
+        province: provinceSelect.length,
+        municipality: municipalitySelect.length,
+        sector: sectorSelect.length
+      });
+
+      if (provinceSelect.length) {
+        console.log('Configurando evento change para provincia');
+        provinceSelect.on('change', function() {
+          const provinceId = $(this).val();
+          console.log('Provincia seleccionada:', provinceId);
+          
+          // Limpiar municipios y sectores
+          clearSelect2(municipalitySelect);
+          clearSelect2(sectorSelect);
+          
+          if (provinceId) {
+            loadMunicipalities(provinceId);
+          }
+        });
+      }
+
+      if (municipalitySelect.length) {
+        municipalitySelect.on('change', function() {
+          const municipalityId = $(this).val();
+          
+          // Limpiar sectores
+          clearSelect2(sectorSelect);
+          
+          if (municipalityId) {
+            loadSectors(municipalityId);
+          }
+        });
+      }
+
+      // Cargar municipios y sectores si ya hay valores seleccionados (para edición)
+      if (provinceSelect.length && provinceSelect.val()) {
+        loadMunicipalities(provinceSelect.val(), municipalitySelect.val());
+      }
+    }, 100);
+  }
+
+  /**
+   * Cargar municipios por provincia
+   * @param {string} provinceId - ID de la provincia
+   * @param {string} selectedMunicipalityId - ID del municipio previamente seleccionado (opcional)
+   */
+  function loadMunicipalities(provinceId, selectedMunicipalityId = null) {
+    const municipalitySelect = $('#municipality_id');
+    
+    if (!municipalitySelect.length) return;
+
+    // Mostrar indicador de carga
+    municipalitySelect.prop('disabled', true);
+    municipalitySelect.empty().append('<option value="">Cargando municipios...</option>');
+    municipalitySelect.trigger('change');
+
+    console.log('Cargando municipios para provincia:', provinceId);
+    
+    fetch(`/api/municipalities/${provinceId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      }
+    })
+      .then(response => {
+        console.log('Respuesta del servidor:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Datos recibidos:', data);
+        if (data.success) {
+          municipalitySelect.empty().append('<option value="">Seleccionar Municipio</option>');
+          
+          data.data.forEach(municipality => {
+            const option = $('<option></option>')
+              .attr('value', municipality.id)
+              .text(municipality.name);
+            
+            if (selectedMunicipalityId && municipality.id == selectedMunicipalityId) {
+              option.prop('selected', true);
+            }
+            
+            municipalitySelect.append(option);
+          });
+          console.log('Municipios cargados exitosamente');
+        } else {
+          municipalitySelect.empty().append('<option value="">Error al cargar municipios</option>');
+          showNotification('Error al cargar los municipios', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error en la petición:', error);
+        municipalitySelect.empty().append('<option value="">Error al cargar municipios</option>');
+        showNotification('Error al cargar los municipios', 'error');
+      })
+      .finally(() => {
+        municipalitySelect.prop('disabled', false);
+        municipalitySelect.trigger('change');
+      });
+  }
+
+  /**
+   * Cargar sectores por municipio
+   * @param {string} municipalityId - ID del municipio
+   * @param {string} selectedSectorId - ID del sector previamente seleccionado (opcional)
+   */
+  function loadSectors(municipalityId, selectedSectorId = null) {
+    const sectorSelect = $('#sector_id');
+    
+    if (!sectorSelect.length) return;
+
+    // Mostrar indicador de carga
+    sectorSelect.prop('disabled', true);
+    sectorSelect.empty().append('<option value="">Cargando sectores...</option>');
+    sectorSelect.trigger('change');
+
+    fetch(`/api/sectors/${municipalityId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          sectorSelect.empty().append('<option value="">Seleccionar Sector</option>');
+          
+          data.data.forEach(sector => {
+            const option = $('<option></option>')
+              .attr('value', sector.id)
+              .text(sector.name);
+            
+            if (selectedSectorId && sector.id == selectedSectorId) {
+              option.prop('selected', true);
+            }
+            
+            sectorSelect.append(option);
+          });
+        } else {
+          sectorSelect.empty().append('<option value="">Error al cargar sectores</option>');
+          showNotification('Error al cargar los sectores', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        sectorSelect.empty().append('<option value="">Error al cargar sectores</option>');
+        showNotification('Error al cargar los sectores', 'error');
+      })
+      .finally(() => {
+        sectorSelect.prop('disabled', false);
+        sectorSelect.trigger('change');
+      });
+  }
+
+  /**
+   * Limpiar un select y agregar opción por defecto
+   * @param {jQuery} select - Elemento select a limpiar
+   */
+  function clearSelect2(select) {
+    if (select && select.length) {
+      select.empty().append('<option value="">Seleccionar...</option>');
+      select.trigger('change');
+    }
+  }
+
+  /**
+   * Limpiar un select y agregar opción por defecto (versión vanilla JS)
+   * @param {HTMLSelectElement} select - Elemento select a limpiar
+   */
+  function clearSelect(select) {
+    if (select) {
+      select.innerHTML = '<option value="">Seleccionar...</option>';
+    }
+  }
+
+  /**
    * Mostrar notificaciones al usuario
    * @param {string} message - Mensaje a mostrar
    * @param {string} type - Tipo de notificación (success, error, warning, info)
@@ -338,6 +534,8 @@
       'birth_date',
       'birth_place',
       'country',
+      'province_id',
+      'municipality_id',
       'cell_phone',
       'emergency_contact_name',
       'emergency_contact_phone'
@@ -448,7 +646,11 @@
     showNotification: showNotification,
     validateForm: validateForm,
     applyCedulaMask: applyCedulaMask,
-    applyPhoneMask: applyPhoneMask
+    applyPhoneMask: applyPhoneMask,
+    loadMunicipalities: loadMunicipalities,
+    loadSectors: loadSectors,
+    clearSelect: clearSelect,
+    clearSelect2: clearSelect2
   };
 
 })();

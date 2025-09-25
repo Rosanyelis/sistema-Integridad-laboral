@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('person_id')->constrained('people')->onDelete('cascade');
             $table->foreignId('province_id')->constrained('provinces')->onDelete('cascade');
             $table->foreignId('municipality_id')->constrained('municipalities')->onDelete('cascade');
-            $table->foreignId('sector_id')->constrained('sectors')->onDelete('cascade');
+            $table->foreignId('sector_id')->nullable()->constrained('sectors')->onDelete('cascade');
             $table->string('residential_complex')->nullable()->comment('Complejo residencial');
             $table->string('building')->nullable()->comment('Edificio');
             $table->string('apartment')->nullable()->comment('Apartamento');

@@ -11,9 +11,9 @@ class ResidenceInformation extends Model
 
     protected $fillable = [
         'person_id',
-        'province',
-        'municipality',
-        'sector',
+        'province_id',
+        'municipality_id',
+        'sector_id',
         'residential_complex',
         'building',
         'apartment',
@@ -38,27 +38,54 @@ class ResidenceInformation extends Model
     }
 
     /**
+     * Relación con Province (belongsTo)
+     * Una información de residencia pertenece a una provincia
+     */
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    /**
+     * Relación con Municipality (belongsTo)
+     * Una información de residencia pertenece a un municipio
+     */
+    public function municipality()
+    {
+        return $this->belongsTo(Municipality::class);
+    }
+
+    /**
+     * Relación con Sector (belongsTo)
+     * Una información de residencia pertenece a un sector
+     */
+    public function sector()
+    {
+        return $this->belongsTo(Sector::class);
+    }
+
+    /**
      * Scope para filtrar por provincia
      */
-    public function scopeByProvince($query, string $province)
+    public function scopeByProvince($query, int $provinceId)
     {
-        return $query->where('province', $province);
+        return $query->where('province_id', $provinceId);
     }
 
     /**
      * Scope para filtrar por municipio
      */
-    public function scopeByMunicipality($query, string $municipality)
+    public function scopeByMunicipality($query, int $municipalityId)
     {
-        return $query->where('municipality', $municipality);
+        return $query->where('municipality_id', $municipalityId);
     }
 
     /**
      * Scope para filtrar por sector
      */
-    public function scopeBySector($query, string $sector)
+    public function scopeBySector($query, int $sectorId)
     {
-        return $query->where('sector', $sector);
+        return $query->where('sector_id', $sectorId);
     }
 
     /**
@@ -85,9 +112,9 @@ class ResidenceInformation extends Model
         $addressParts = array_filter([
             $this->street_and_number,
             $this->neighborhood,
-            $this->sector,
-            $this->municipality,
-            $this->province,
+            $this->sector?->name,
+            $this->municipality?->name,
+            $this->province?->name,
         ]);
 
         return implode(', ', $addressParts);
@@ -99,8 +126,8 @@ class ResidenceInformation extends Model
     public function getShortAddressAttribute(): string
     {
         $addressParts = array_filter([
-            $this->sector,
-            $this->municipality,
+            $this->sector?->name,
+            $this->municipality?->name,
         ]);
 
         return implode(', ', $addressParts);

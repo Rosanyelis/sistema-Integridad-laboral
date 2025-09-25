@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
         // Ejecutar el seeder de roles y permisos
         $this->call([
             RolePermissionSeeder::class,
+            ProvinceSeeder::class,
+            MunicipaltySeeder::class,
+            SectorSeeder::class,
         ]);
 
         // Crear usuarios adicionales con factory (opcional)

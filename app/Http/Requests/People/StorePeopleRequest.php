@@ -83,6 +83,57 @@ class StorePeopleRequest extends FormRequest
                 'min:2'
             ],
 
+            // Información de Dirección
+            'province_id' => [
+                'required',
+                'integer',
+                'exists:provinces,id'
+            ],
+            'municipality_id' => [
+                'required',
+                'integer',
+                'exists:municipalities,id'
+            ],
+            'sector_id' => [
+                'nullable',
+                'string'
+            ],
+            'residential_complex' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+            'building' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+            'apartment' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+            'neighborhood' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+            'street_and_number' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+            'coordinates' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+            'arrival_reference' => [
+                'nullable',
+                'string',
+                'max:500'
+            ],
+
             // Información de Contacto
             'zip_code' => [
                 'nullable',
@@ -122,27 +173,11 @@ class StorePeopleRequest extends FormRequest
             ],
 
             // Aspiración Laboral y Empleo Actual
-            'position_applied_for' => [
-                'required',
-                'string',
-                'max:255',
-                'min:2'
-            ],
             'blood_type' => [
                 'nullable',
                 'string',
                 'max:10',
                 'regex:/^(A|B|AB|O)[+-]$/i'
-            ],
-            'company_code' => [
-                'nullable',
-                'string',
-                'max:50'
-            ],
-            'company_name' => [
-                'nullable',
-                'string',
-                'max:255'
             ],
 
             // Información de Salud
@@ -168,7 +203,7 @@ class StorePeopleRequest extends FormRequest
                 'required',
                 'string',
                 'max:20',
-                'regex:/^[0-9+\-\s()]{7,20}$/'
+                'regex:/^\d{4}-\d{3}-\d{4}$/'
             ],
             'other_emergency_contacts' => [
                 'nullable',
@@ -176,12 +211,6 @@ class StorePeopleRequest extends FormRequest
                 'max:1000'
             ],
 
-            // Estado Laboral
-            'employment_status' => [
-                'required',
-                'string',
-                Rule::in(array_keys(EmploymentStatus::getOptions()))
-            ],
         ];
     }
 
@@ -216,6 +245,12 @@ class StorePeopleRequest extends FormRequest
             'country.required' => 'El país es obligatorio.',
             'country.min' => 'El país debe tener al menos 2 caracteres.',
 
+            // Información de Dirección
+            'province_id.required' => 'La provincia es obligatoria.',
+            'province_id.exists' => 'La provincia seleccionada no es válida.',
+            'municipality_id.required' => 'El municipio es obligatorio.',
+            'municipality_id.exists' => 'El municipio seleccionado no es válido.',
+
             // Información de Contacto
             'zip_code.regex' => 'El código postal debe contener entre 4 y 6 dígitos.',
             'cell_phone.required' => 'El teléfono celular es obligatorio.',
@@ -227,19 +262,14 @@ class StorePeopleRequest extends FormRequest
             'email.unique' => 'El correo electrónico ya está registrado.',
 
             // Aspiración Laboral
-            'position_applied_for.required' => 'El cargo que aspira es obligatorio.',
-            'position_applied_for.min' => 'El cargo que aspira debe tener al menos 2 caracteres.',
             'blood_type.regex' => 'El tipo de sangre debe tener un formato válido (ej: A+, B-, AB+, O-).',
 
             // Contactos de Emergencia
             'emergency_contact_name.required' => 'El nombre del contacto de emergencia es obligatorio.',
             'emergency_contact_name.min' => 'El nombre del contacto de emergencia debe tener al menos 2 caracteres.',
             'emergency_contact_phone.required' => 'El teléfono de emergencia es obligatorio.',
-            'emergency_contact_phone.regex' => 'El formato del teléfono de emergencia no es válido.',
+            'emergency_contact_phone.regex' => 'El teléfono de emergencia debe tener el formato 0000-000-0000.',
 
-            // Estado Laboral
-            'employment_status.required' => 'El estado laboral es obligatorio.',
-            'employment_status.in' => 'El estado laboral seleccionado no es válido.',
         ];
     }
 
@@ -260,22 +290,28 @@ class StorePeopleRequest extends FormRequest
             'marital_status' => 'estado civil',
             'birth_place' => 'lugar de nacimiento',
             'country' => 'país',
+            'province_id' => 'provincia',
+            'municipality_id' => 'municipio',
+            'sector_id' => 'sector',
+            'residential_complex' => 'residencial',
+            'building' => 'edificio',
+            'apartment' => 'apartamento',
+            'neighborhood' => 'barrio',
+            'street_and_number' => 'calle y número',
+            'coordinates' => 'coordenada',
+            'arrival_reference' => 'referencia de llegada',
             'zip_code' => 'código postal',
             'cell_phone' => 'teléfono celular',
             'home_phone' => 'teléfono fijo',
             'email' => 'correo electrónico',
             'social_media_1' => 'red social 1',
             'social_media_2' => 'red social 2',
-            'position_applied_for' => 'cargo que aspira',
             'blood_type' => 'tipo de sangre',
-            'company_code' => 'código de empresa',
-            'company_name' => 'nombre de empresa',
             'medication_allergies' => 'alergias a medicamentos',
             'illnesses' => 'enfermedades',
             'emergency_contact_name' => 'nombre del contacto de emergencia',
             'emergency_contact_phone' => 'teléfono de emergencia',
             'other_emergency_contacts' => 'otros contactos de emergencia',
-            'employment_status' => 'estado laboral',
         ];
     }
 
@@ -294,7 +330,7 @@ class StorePeopleRequest extends FormRequest
             // Mantener el formato de teléfono con guiones
             'cell_phone' => $this->cell_phone,
             'home_phone' => $this->home_phone ? preg_replace('/[^0-9+\-\s()]/', '', $this->home_phone) : null,
-            'emergency_contact_phone' => preg_replace('/[^0-9+\-\s()]/', '', $this->emergency_contact_phone),
+            'emergency_contact_phone' => $this->emergency_contact_phone,
             'zip_code' => $this->zip_code ? preg_replace('/[^0-9]/', '', $this->zip_code) : null,
             'blood_type' => $this->blood_type ? strtoupper(trim($this->blood_type)) : null,
         ]);

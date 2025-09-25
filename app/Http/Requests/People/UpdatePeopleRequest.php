@@ -124,27 +124,11 @@ class UpdatePeopleRequest extends FormRequest
             ],
 
             // Aspiración Laboral y Empleo Actual
-            'position_applied_for' => [
-                'required',
-                'string',
-                'max:255',
-                'min:2'
-            ],
             'blood_type' => [
                 'nullable',
                 'string',
                 'max:10',
                 'regex:/^(A|B|AB|O)[+-]$/i'
-            ],
-            'company_code' => [
-                'nullable',
-                'string',
-                'max:50'
-            ],
-            'company_name' => [
-                'nullable',
-                'string',
-                'max:255'
             ],
 
             // Información de Salud
@@ -229,8 +213,6 @@ class UpdatePeopleRequest extends FormRequest
             'email.unique' => 'El correo electrónico ya está registrado.',
 
             // Aspiración Laboral
-            'position_applied_for.required' => 'El cargo que aspira es obligatorio.',
-            'position_applied_for.min' => 'El cargo que aspira debe tener al menos 2 caracteres.',
             'blood_type.regex' => 'El tipo de sangre debe tener un formato válido (ej: A+, B-, AB+, O-).',
 
             // Contactos de Emergencia

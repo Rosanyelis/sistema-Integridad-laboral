@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // columns according to JSON
         { data: 'id' },
         { data: 'id', orderable: false, render: DataTable.render.select() },
+        { data: 'code_unique' },
         { data: 'name' },
         { data: 'dni' },
         { data: 'age' },
@@ -93,6 +94,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
           targets: 2,
           responsivePriority: 3,
           render: function (data, type, full, meta) {
+            return '<span class="text-truncate d-flex align-items-center text-heading">' + data + '</span>';
+          }
+        },
+        {
+          targets: 3,
+          responsivePriority: 3,
+          render: function (data, type, full, meta) {
             var name = full['name'];
             var output;
 
@@ -124,20 +132,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 3,
+          targets: 4,
           render: function (data, type, full, meta) {
             return '<span class="text-truncate d-flex align-items-center text-heading">' + data + '</span>';
           }
         },
         {
-          targets: 4,
+          targets: 5,
           render: function (data, type, full, meta) {
             return '<span class="text-heading">' + data + ' años</span>';
           }
         },
         {
           // Verification Status
-          targets: 5,
+          targets: 6,
           render: function (data, type, full, meta) {
             const verified = full['verified'];
             const verifiedClass = verified === 'Parcial' ? 'bg-label-success' : 'bg-label-warning';
@@ -152,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         },
         {
           // Employment Status
-          targets: 6,
+          targets: 7,
           render: function (data, type, full, meta) {
             const status = full['status'];
             return (

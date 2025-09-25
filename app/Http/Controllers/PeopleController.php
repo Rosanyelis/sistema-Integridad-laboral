@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\People;
+use App\Models\Province;
+use App\Models\Municipality;
+use App\Models\Sector;
+use App\Models\ResidenceInformation;
 use App\Enums\MaritalStatus;
 use App\Enums\EmploymentStatus;
 use App\Http\Requests\People\StorePeopleRequest;
@@ -42,6 +46,7 @@ class PeopleController extends Controller
             if ($request->has('search') && !empty($request->search)) {
                 $query->where(function($q) use ($request) {
                     $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('code_unique', 'like', '%' . $request->search . '%')
                     ->orWhere('last_name', 'like', '%' . $request->search . '%')
                     ->orWhere('dni', 'like', '%' . $request->search . '%');
                 });
@@ -68,6 +73,7 @@ class PeopleController extends Controller
                 
                 return [
                     'id' => $person->id,
+                    'code_unique' => $person->code_unique,
                     'name' => $fullName,
                     'dni' => $person->dni,
                     'age' => $person->age,
@@ -108,6 +114,8 @@ class PeopleController extends Controller
     public function store(StorePeopleRequest $request)
     {
         try {
+            DB::beginTransaction();
+            
             $validatedData = $request->validated();
 
             // Calcular edad si no se proporciona
@@ -118,12 +126,48 @@ class PeopleController extends Controller
                 $validatedData['age'] = $age;
             }
 
-            $person = People::create($validatedData);
+            // Establecer estado laboral como pendiente por defecto
+            $validatedData['employment_status'] = EmploymentStatus::PENDIENTE->value;
+            
+            // Establecer cargo que aspira por defecto
+            $validatedData['position_applied_for'] = 'Por definir';
+
+            // Separar datos de la persona de los datos de residencia
+            $personData = collect($validatedData)->except([
+                'province_id', 'municipality_id', 'sector_id',
+                'residential_complex', 'building', 'apartment',
+                'neighborhood', 'street_and_number', 'coordinates', 'arrival_reference'
+            ])->toArray();
+
+            $person = People::create($personData);
+
+            // Crear información de residencia si se proporcionan los datos
+            if (!empty($validatedData['province_id']) || !empty($validatedData['municipality_id'])) {
+                $residenceData = [
+                    'person_id' => $person->id,
+                    'province_id' => $validatedData['province_id'] ?? null,
+                    'municipality_id' => $validatedData['municipality_id'] ?? null,
+                    'sector_id' => $validatedData['sector_id'] === 'no_aplica' ? null : $validatedData['sector_id'] ?? null,
+                    'residential_complex' => $validatedData['residential_complex'] ?? null,
+                    'building' => $validatedData['building'] ?? null,
+                    'apartment' => $validatedData['apartment'] ?? null,
+                    'neighborhood' => $validatedData['neighborhood'] ?? null,
+                    'street_and_number' => $validatedData['street_and_number'] ?? null,
+                    'coordinates' => $validatedData['coordinates'] ?? null,
+                    'arrival_reference' => $validatedData['arrival_reference'] ?? null,
+                    'is_certified' => false,
+                ];
+
+                ResidenceInformation::create($residenceData);
+            }
+
+            DB::commit();
 
             return redirect()->route('people.index')
                 ->with('success', 'Personal creado exitosamente.');
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::info('Error en PeopleController@store: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'Error al crear el personal: ' . $e->getMessage())
@@ -226,4 +270,58 @@ class PeopleController extends Controller
             'message' => 'Funcionalidad de exportación a PDF pendiente de implementar'
         ]);
     }
+
+    /**
+     * Obtener municipios por provincia
+     */
+    public function getMunicipalities($provinceId): JsonResponse
+    {
+        try {
+            $municipalities = Municipality::where('province_id', $provinceId)
+                ->orderBy('name')
+                ->get(['id', 'name']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $municipalities
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error en PeopleController@getMunicipalities: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los municipios'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener sectores por municipio
+     */
+    public function getSectors($municipalityId): JsonResponse
+    {
+        try {
+            $sectors = Sector::where('municipality_id', $municipalityId)
+                ->orderBy('name')
+                ->get(['id', 'name']);
+
+            // Si no hay sectores, agregar opción "No aplica"
+            if ($sectors->isEmpty()) {
+                $sectors = collect([
+                    (object)['id' => 'no_aplica', 'name' => 'No aplica']
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $sectors
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error en PeopleController@getSectors: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los sectores'
+            ], 500);
+        }
+    }
+
 }

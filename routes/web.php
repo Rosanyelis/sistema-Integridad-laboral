@@ -73,6 +73,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
   Route::post('people/update-status', [PeopleController::class, 'updateStatus'])->name('people.update-status');
   Route::post('people/export-excel', [PeopleController::class, 'exportExcel'])->name('people.export-excel');
   Route::post('people/export-pdf', [PeopleController::class, 'exportPdf'])->name('people.export-pdf');
+  
+  // Rutas API para selects dinámicos
+  Route::get('api/municipalities/{province_id}', [PeopleController::class, 'getMunicipalities'])->name('api.municipalities');
+  Route::get('api/sectors/{municipality_id}', [PeopleController::class, 'getSectors'])->name('api.sectors');
 });
 
 // Jetstream Routes
