@@ -10,10 +10,12 @@ use App\Models\ResidenceInformation;
 use App\Enums\MaritalStatus;
 use App\Enums\EmploymentStatus;
 use App\Http\Requests\People\StorePeopleRequest;
+use App\Http\Requests\People\UpdatePeopleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PeopleController extends Controller
@@ -200,6 +202,71 @@ class PeopleController extends Controller
         }
     }
 
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdatePeopleRequest $request, $id)
+    {
+        
+        try {
+            $person = People::findOrFail($id);
+            
+            DB::beginTransaction();
+            
+            $validatedData = $request->validated();
+
+            // Calcular edad si no se proporciona
+            if (empty($validatedData['age']) && !empty($validatedData['birth_date'])) {
+                $birthDate = new \DateTime($validatedData['birth_date']);
+                $today = new \DateTime();
+                $age = $today->diff($birthDate)->y;
+                $validatedData['age'] = $age;
+            }
+
+            // Manejar carga de imagen si se proporciona
+            if ($request->hasFile('profile_photo')) {
+                $photo = $request->file('profile_photo');
+                
+                // Validar que el archivo sea una imagen válida
+                if ($photo->isValid()) {
+                    $photoName = time() . '_' . $person->id . '.' . $photo->getClientOriginalExtension();
+                    
+                    // Crear el directorio si no existe
+                    $uploadPath = storage_path('app/public/people/photos');
+                    if (!file_exists($uploadPath)) {
+                        mkdir($uploadPath, 0755, true);
+                    }
+                    
+                    // Mover el archivo directamente
+                    $fullPath = $uploadPath . '/' . $photoName;
+                    if (move_uploaded_file($photo->getPathname(), $fullPath)) {
+                        $personData['profile_photo'] = 'people/photos/' . $photoName;
+                    }
+                }
+            }
+
+            $person->update($validatedData);
+            DB::commit();
+
+            return redirect()->route('people.show', $person->id)
+                ->with('success', 'Datos del personal actualizados exitosamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error en PeopleController@update: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Error al actualizar los datos del personal: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    public function showInformationResidential(Request $request)
+    {
+        $person = People::with('residenceInformation')->findOrFail($request->id);
+        return view('module.people.show-information-residential', compact('person'));
+    }
+
     /**
      * Update employment status for selected people
      */
@@ -321,6 +388,85 @@ class PeopleController extends Controller
                 'success' => false,
                 'message' => 'Error al obtener los sectores'
             ], 500);
+        }
+    }
+
+    /**
+     * Actualizar información de residencia de una persona
+     */
+    public function updateResidence(Request $request, $id)
+    {
+        try {
+            $person = People::findOrFail($id);
+            
+            // Validar los datos de entrada
+            $validatedData = $request->validate([
+                'birth_place' => 'nullable|string|max:255',
+                'zip_code' => 'nullable|string|max:20',
+                'country' => 'nullable|string|max:255',
+                'province_id' => 'nullable|integer|exists:provinces,id',
+                'municipality_id' => 'nullable|integer|exists:municipalities,id',
+                'sector_id' => 'nullable|string',
+                'residential_complex' => 'nullable|string|max:255',
+                'building' => 'nullable|string|max:255',
+                'apartment' => 'nullable|string|max:255',
+                'neighborhood' => 'nullable|string|max:255',
+                'street_and_number' => 'nullable|string|max:255',
+                'coordinates' => 'nullable|string|max:255',
+                'arrival_reference' => 'nullable|string|max:500'
+            ]);
+
+            DB::beginTransaction();
+
+            // Actualizar datos de la persona
+            $personData = [
+                'birth_place' => $validatedData['birth_place'] ?? null,
+                'zip_code' => $validatedData['zip_code'] ?? null,
+                'country' => $validatedData['country'] ?? null,
+            ];
+            $person->update($personData);
+
+            // Preparar datos de residencia
+            $residenceData = [
+                'province_id' => $validatedData['province_id'] ?? null,
+                'municipality_id' => $validatedData['municipality_id'] ?? null,
+                'sector_id' => $validatedData['sector_id'] === 'no_aplica' ? null : $validatedData['sector_id'] ?? null,
+                'residential_complex' => $validatedData['residential_complex'] ?? null,
+                'building' => $validatedData['building'] ?? null,
+                'apartment' => $validatedData['apartment'] ?? null,
+                'neighborhood' => $validatedData['neighborhood'] ?? null,
+                'street_and_number' => $validatedData['street_and_number'] ?? null,
+                'coordinates' => $validatedData['coordinates'] ?? null,
+                'arrival_reference' => $validatedData['arrival_reference'] ?? null,
+            ];
+
+            // Actualizar o crear información de residencia
+            if ($person->residenceInformation) {
+                $person->residenceInformation->update($residenceData);
+                $message = 'Información de residencia actualizada exitosamente.';
+            } else {
+                $residenceData['person_id'] = $person->id;
+                $residenceData['is_certified'] = false;
+                ResidenceInformation::create($residenceData);
+                $message = 'Información de residencia creada exitosamente.';
+            }
+
+            DB::commit();
+
+            return redirect()->route('people.showInformationResidential', $person->id)
+                ->with('success', $message);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error en PeopleController@updateResidence: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Error al actualizar la información de residencia: ' . $e->getMessage())
+                ->withInput();
         }
     }
 

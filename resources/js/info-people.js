@@ -1,6 +1,6 @@
 /**
- * People Create Form
- * Funcionalidades específicas para el formulario de creación de personas
+ * People Edit Form (Info People)
+ * Funcionalidades específicas para el formulario de edición de personas
  */
 
 'use strict';
@@ -14,6 +14,7 @@
     initializeImageUpload();
     initializeInputMasks();
     initializeDynamicSelects();
+    initializeFormValidation();
   });
 
   /**
@@ -81,7 +82,6 @@
       showNotification('La edad calculada no es válida', 'error');
     }
   }
-
 
   /**
    * Inicializar máscaras de entrada para cédula y teléfono
@@ -282,7 +282,7 @@
           uploadInput.value = '';
         }
         if (uploadedAvatar) {
-          uploadedAvatar.src = "{{ asset('assets/img/avatars/1.png') }}";
+          uploadedAvatar.src = "/assets/img/avatars/1.png";
         }
       });
     }
@@ -478,6 +478,166 @@
   }
 
   /**
+   * Inicializar validaciones del formulario
+   */
+  function initializeFormValidation() {
+    // Validación en tiempo real para campos requeridos
+    const requiredFields = [
+      'name',
+      'last_name', 
+      'dni',
+      'birth_date',
+      'birth_place',
+      'country',
+      'province_id',
+      'municipality_id',
+      'cell_phone',
+      'emergency_contact_name',
+      'emergency_contact_phone'
+    ];
+
+    requiredFields.forEach(fieldName => {
+      const field = document.querySelector(`[name="${fieldName}"]`);
+      if (field) {
+        // Validación al perder el foco
+        field.addEventListener('blur', function() {
+          validateField(this);
+        });
+
+        // Validación al escribir
+        field.addEventListener('input', function() {
+          if (this.classList.contains('is-invalid')) {
+            validateField(this);
+          }
+        });
+      }
+    });
+
+    // Validación especial para email
+    const emailField = document.querySelector('[name="email"]');
+    if (emailField) {
+      emailField.addEventListener('blur', function() {
+        validateEmailField(this);
+      });
+    }
+
+    // Validación especial para cédula
+    const dniField = document.querySelector('[name="dni"]');
+    if (dniField) {
+      dniField.addEventListener('blur', function() {
+        validateCedulaField(this);
+      });
+    }
+
+    // Validación especial para cédula anterior
+    const previousDniField = document.querySelector('[name="previous_dni"]');
+    if (previousDniField) {
+      previousDniField.addEventListener('blur', function() {
+        validateCedulaField(this);
+      });
+    }
+
+    // Validación especial para teléfono celular
+    const cellPhoneField = document.querySelector('[name="cell_phone"]');
+    if (cellPhoneField) {
+      cellPhoneField.addEventListener('blur', function() {
+        validatePhoneField(this);
+      });
+    }
+
+    // Validación especial para teléfono de emergencia
+    const emergencyPhoneField = document.querySelector('[name="emergency_contact_phone"]');
+    if (emergencyPhoneField) {
+      emergencyPhoneField.addEventListener('blur', function() {
+        validatePhoneField(this);
+      });
+    }
+  }
+
+  /**
+   * Validar un campo individual
+   * @param {HTMLInputElement} field - Campo a validar
+   */
+  function validateField(field) {
+    if (!field.value.trim()) {
+      field.classList.add('is-invalid');
+      field.classList.remove('is-valid');
+      return false;
+    } else {
+      field.classList.remove('is-invalid');
+      field.classList.add('is-valid');
+      return true;
+    }
+  }
+
+  /**
+   * Validar campo de email
+   * @param {HTMLInputElement} field - Campo de email a validar
+   */
+  function validateEmailField(field) {
+    if (!field.value.trim()) {
+      field.classList.remove('is-invalid', 'is-valid');
+      return true; // Email es opcional
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(field.value)) {
+      field.classList.add('is-invalid');
+      field.classList.remove('is-valid');
+      return false;
+    } else {
+      field.classList.remove('is-invalid');
+      field.classList.add('is-valid');
+      return true;
+    }
+  }
+
+  /**
+   * Validar campo de cédula
+   * @param {HTMLInputElement} field - Campo de cédula a validar
+   */
+  function validateCedulaField(field) {
+    if (!field.value.trim()) {
+      field.classList.remove('is-invalid', 'is-valid');
+      return true; // Cédula anterior es opcional
+    }
+
+    const cedulaRegex = /^\d{3}-\d{7}-\d{1}$/;
+    if (!cedulaRegex.test(field.value)) {
+      field.classList.add('is-invalid');
+      field.classList.remove('is-valid');
+      return false;
+    } else {
+      field.classList.remove('is-invalid');
+      field.classList.add('is-valid');
+      return true;
+    }
+  }
+
+  /**
+   * Validar campo de teléfono
+   * @param {HTMLInputElement} field - Campo de teléfono a validar
+   */
+  function validatePhoneField(field) {
+    if (!field.value.trim()) {
+      field.classList.add('is-invalid');
+      field.classList.remove('is-valid');
+      return false;
+    }
+
+    const phoneRegex = /^\d{4}-\d{3}-\d{4}$/;
+    if (!phoneRegex.test(field.value)) {
+      field.classList.add('is-invalid');
+      field.classList.remove('is-valid');
+      return false;
+    } else {
+      field.classList.remove('is-invalid');
+      field.classList.add('is-valid');
+      return true;
+    }
+  }
+
+  /**
    * Mostrar notificaciones al usuario
    * @param {string} message - Mensaje a mostrar
    * @param {string} type - Tipo de notificación (success, error, warning, info)
@@ -585,6 +745,17 @@
       }
     }
 
+    // Validar formato de teléfono de emergencia
+    const emergencyPhoneField = document.querySelector('[name="emergency_contact_phone"]');
+    if (emergencyPhoneField && emergencyPhoneField.value) {
+      const phoneRegex = /^\d{4}-\d{3}-\d{4}$/;
+      if (!phoneRegex.test(emergencyPhoneField.value)) {
+        emergencyPhoneField.classList.add('is-invalid');
+        showNotification('El teléfono de emergencia debe tener el formato 0000-000-0000', 'error');
+        isValid = false;
+      }
+    }
+
     if (!isValid && firstInvalidField) {
       firstInvalidField.focus();
       showNotification('Por favor completa todos los campos obligatorios', 'error');
@@ -624,8 +795,34 @@
     });
   }
 
+  // Funcionalidad para confirmar cambios antes de salir
+  let formChanged = false;
+  const formInputs = document.querySelectorAll('#formAccountSettings input, #formAccountSettings select, #formAccountSettings textarea');
+  
+  formInputs.forEach(input => {
+    input.addEventListener('change', function() {
+      formChanged = true;
+    });
+  });
+
+  // Confirmar antes de salir si hay cambios sin guardar
+  window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+      e.preventDefault();
+      e.returnValue = '¿Estás seguro de que quieres salir? Los cambios no guardados se perderán.';
+      return e.returnValue;
+    }
+  });
+
+  // Marcar formulario como guardado cuando se envía exitosamente
+  if (form) {
+    form.addEventListener('submit', function() {
+      formChanged = false;
+    });
+  }
+
   // Exponer funciones globalmente si es necesario
-  window.PeopleCreate = {
+  window.PeopleInfo = {
     calculateAge: calculateAge,
     showNotification: showNotification,
     validateForm: validateForm,
@@ -634,7 +831,11 @@
     loadMunicipalities: loadMunicipalities,
     loadSectors: loadSectors,
     clearSelect: clearSelect,
-    clearSelect2: clearSelect2
+    clearSelect2: clearSelect2,
+    validateField: validateField,
+    validateEmailField: validateEmailField,
+    validateCedulaField: validateCedulaField,
+    validatePhoneField: validatePhoneField
   };
 
 })();

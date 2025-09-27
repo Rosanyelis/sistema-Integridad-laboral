@@ -194,4 +194,7 @@
   </div>
 </div>
 
+<!-- Incluir alerts para mensajes flash con SweetAlert -->
+@include('layouts/sections/alerts')
+
 @endsection

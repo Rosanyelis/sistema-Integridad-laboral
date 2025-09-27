@@ -7,8 +7,7 @@
   'resources/assets/vendor/libs/select2/select2.scss', 
   'resources/assets/vendor/libs/@form-validation/form-validation.scss', 
   'resources/assets/vendor/libs/animate-css/animate.scss', 
-  'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss',
-  'resources/assets/vendor/libs/flatpickr/flatpickr.scss'
+  'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss'
 ])
 @endsection
 
@@ -19,8 +18,7 @@
   'resources/assets/vendor/libs/@form-validation/bootstrap5.js', 
   'resources/assets/vendor/libs/@form-validation/auto-focus.js', 
   'resources/assets/vendor/libs/cleave-zen/cleave-zen.js', 
-  'resources/assets/vendor/libs/sweetalert2/sweetalert2.js',
-  'resources/assets/vendor/libs/flatpickr/flatpickr.js'
+  'resources/assets/vendor/libs/sweetalert2/sweetalert2.js'
 ])
 @endsection
 
@@ -37,8 +35,8 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Crear Personal</h5>
-        <a href="{{ route('people.index') }}" class="btn btn-outline-secondary">
+        <h5 class="mb-0 text-uppercase">Crear Personal</h5>
+        <a href="{{ route('people.index') }}" class="btn btn-outline-secondary text-uppercase">
           <i class="icon-base ti tabler-arrow-left me-1"></i>
           Volver
         </a>
@@ -46,7 +44,6 @@
       <div class="card-body">
         <form id="formAccountSettings" action="{{ route('people.store') }}" method="POST" enctype="multipart/form-data">
           @csrf
-          {{$errors}}
           <div class="border border-primary bg-primary rounded-3 py-2 px-3 mb-4">
             <h6 class="text-uppercase text-white m-0">1. Datos de Identificación</h6>
           </div>
@@ -78,7 +75,7 @@
               @enderror
             </div>
             <div class="col-md-2 mb-3">
-              <label for="previous_dni" class="form-label">CÉDULA ANT.</label>
+              <label for="previous_dni" class="form-label">CÉDULA ANTERIOR</label>
               <input type="text" class="form-control form-control-sm @error('previous_dni') is-invalid @enderror" 
                      id="previous_dni" name="previous_dni" value="{{ old('previous_dni') }}">
               @error('previous_dni')
@@ -87,8 +84,8 @@
             </div>
             <div class="col-md-2 mb-3">
               <label for="birth_date" class="form-label">*FECHA NAC</label>
-              <input type="text" class="form-control form-control-sm flatpickr-input @error('birth_date') is-invalid @enderror" 
-              id="flatpickr-date" name="birth_date" value="{{ old('birth_date') }}" >
+              <input type="date" class="form-control form-control-sm @error('birth_date') is-invalid @enderror" 
+              id="birth_date" name="birth_date" value="{{ old('birth_date') }}" >
               @error('birth_date')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -337,11 +334,11 @@
           <div class="row">
             <div class="col-12">
               <div class="d-flex justify-content-end gap-2">
-                <a href="{{ route('people.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('people.index') }}" class="btn btn-outline-secondary text-uppercase">
                   <i class="icon-base ti tabler-x me-1"></i>
                   Cancelar
                 </a>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary text-uppercase">
                   <i class="icon-base ti tabler-check me-1"></i>
                   Guardar Personal
                 </button>

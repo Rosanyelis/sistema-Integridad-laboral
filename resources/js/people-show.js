@@ -1,6 +1,6 @@
 /**
- * People Create Form
- * Funcionalidades específicas para el formulario de creación de personas
+ * People Show Form
+ * Funcionalidades específicas para la vista de perfil de persona con edición
  */
 
 'use strict';
@@ -8,13 +8,110 @@
 (function () {
   'use strict';
 
+  // Variables globales
+  let isEditMode = false;
+
   // Inicialización cuando el DOM esté listo
   document.addEventListener('DOMContentLoaded', function() {
+    initializeEditMode();
     initializeAgeCalculation();
     initializeImageUpload();
     initializeInputMasks();
     initializeDynamicSelects();
   });
+
+  /**
+   * Inicializar modo de edición
+   */
+  function initializeEditMode() {
+    const editBtn = document.getElementById('editBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const form = document.getElementById('formAccountSettings');
+    const readOnlyView = document.getElementById('readOnlyView');
+    const imageUploadSection = document.getElementById('imageUploadSection');
+
+    if (editBtn) {
+      editBtn.addEventListener('click', function() {
+        enableEditMode();
+      });
+    }
+
+    if (cancelEditBtn) {
+      cancelEditBtn.addEventListener('click', function() {
+        disableEditMode();
+      });
+    }
+  }
+
+  /**
+   * Habilitar modo de edición
+   */
+  function enableEditMode() {
+    isEditMode = true;
+    
+    const editBtn = document.getElementById('editBtn');
+    const form = document.getElementById('formAccountSettings');
+    const readOnlyView = document.getElementById('readOnlyView');
+    const imageUploadSection = document.getElementById('imageUploadSection');
+
+    // Cambiar botón de editar
+    if (editBtn) {
+      editBtn.style.display = 'none';
+    }
+
+    // Mostrar formulario y ocultar vista de solo lectura
+    if (form) {
+      form.style.display = 'block';
+    }
+    if (readOnlyView) {
+      readOnlyView.style.display = 'none';
+    }
+    if (imageUploadSection) {
+      imageUploadSection.style.display = 'block';
+    }
+
+    // Inicializar Select2 en los selects del formulario
+    setTimeout(() => {
+      $('.select2').select2({
+        placeholder: 'Seleccionar...',
+        allowClear: true
+      });
+    }, 100);
+  }
+
+  /**
+   * Deshabilitar modo de edición
+   */
+  function disableEditMode() {
+    isEditMode = false;
+    
+    const editBtn = document.getElementById('editBtn');
+    const form = document.getElementById('formAccountSettings');
+    const readOnlyView = document.getElementById('readOnlyView');
+    const imageUploadSection = document.getElementById('imageUploadSection');
+
+    // Restaurar botón de editar
+    if (editBtn) {
+      editBtn.style.display = 'inline-block';
+    }
+
+    // Ocultar formulario y mostrar vista de solo lectura
+    if (form) {
+      form.style.display = 'none';
+    }
+    if (readOnlyView) {
+      readOnlyView.style.display = 'block';
+    }
+    if (imageUploadSection) {
+      imageUploadSection.style.display = 'none';
+    }
+
+    // Limpiar errores de validación
+    const errorElements = document.querySelectorAll('.is-invalid');
+    errorElements.forEach(element => {
+      element.classList.remove('is-invalid');
+    });
+  }
 
   /**
    * Inicializar el cálculo de edad con el input date nativo
@@ -40,7 +137,7 @@
         }
       });
       
-      // Calcular edad si ya hay una fecha cargada (para edición)
+      // Calcular edad si ya hay una fecha cargada
       if (birthDateInput.value) {
         calculateAge(new Date(birthDateInput.value));
       }
@@ -82,6 +179,57 @@
     }
   }
 
+  /**
+   * Inicializar funcionalidad de carga de imágenes
+   */
+  function initializeImageUpload() {
+    const uploadInput = document.getElementById('upload');
+    const uploadedAvatar = document.getElementById('uploadedAvatar');
+    const resetButton = document.querySelector('.account-image-reset');
+
+    if (uploadInput && uploadedAvatar) {
+      // Evento para cuando se selecciona una imagen
+      uploadInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        
+        if (file) {
+          // Validar tipo de archivo
+          if (!file.type.match('image.*')) {
+            showNotification('Por favor selecciona un archivo de imagen válido', 'error');
+            return;
+          }
+          
+          // Validar tamaño de archivo (800KB máximo)
+          if (file.size > 800 * 1024) {
+            showNotification('El archivo es demasiado grande. Máximo 800KB', 'error');
+            return;
+          }
+          
+          // Crear objeto FileReader para previsualizar la imagen
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            uploadedAvatar.src = e.target.result;
+            uploadedAvatar.style.display = 'block';
+          };
+          
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    // Evento para resetear la imagen
+    if (resetButton) {
+      resetButton.addEventListener('click', function() {
+        if (uploadInput) {
+          uploadInput.value = '';
+        }
+        if (uploadedAvatar) {
+          uploadedAvatar.src = "{{ asset('assets/img/avatars/1.png') }}";
+        }
+      });
+    }
+  }
 
   /**
    * Inicializar máscaras de entrada para cédula y teléfono
@@ -145,33 +293,6 @@
       
       e.target.value = formattedValue;
     });
-
-    // Permitir solo números y guiones en el campo
-    input.addEventListener('keypress', function(e) {
-      const char = String.fromCharCode(e.which);
-      if (!/[0-9]/.test(char) && e.which !== 8 && e.which !== 0) {
-        e.preventDefault();
-      }
-    });
-
-    // Manejar teclas de navegación y eliminación
-    input.addEventListener('keydown', function(e) {
-      // Permitir teclas de navegación, eliminación y edición
-      const allowedKeys = [8, 9, 27, 46, 37, 38, 39, 40]; // backspace, tab, escape, delete, arrow keys
-      if (allowedKeys.includes(e.keyCode) || 
-          (e.keyCode === 65 && e.ctrlKey) || // Ctrl+A
-          (e.keyCode === 67 && e.ctrlKey) || // Ctrl+C
-          (e.keyCode === 86 && e.ctrlKey) || // Ctrl+V
-          (e.keyCode === 88 && e.ctrlKey) || // Ctrl+X
-          (e.keyCode === 90 && e.ctrlKey)) { // Ctrl+Z
-        return;
-      }
-      
-      // Permitir solo números
-      if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-        e.preventDefault();
-      }
-    });
   }
 
   /**
@@ -207,109 +328,21 @@
       
       e.target.value = formattedValue;
     });
-
-    // Permitir solo números y guiones en el campo
-    input.addEventListener('keypress', function(e) {
-      const char = String.fromCharCode(e.which);
-      if (!/[0-9]/.test(char) && e.which !== 8 && e.which !== 0) {
-        e.preventDefault();
-      }
-    });
-
-    // Manejar teclas de navegación y eliminación
-    input.addEventListener('keydown', function(e) {
-      // Permitir teclas de navegación, eliminación y edición
-      const allowedKeys = [8, 9, 27, 46, 37, 38, 39, 40]; // backspace, tab, escape, delete, arrow keys
-      if (allowedKeys.includes(e.keyCode) || 
-          (e.keyCode === 65 && e.ctrlKey) || // Ctrl+A
-          (e.keyCode === 67 && e.ctrlKey) || // Ctrl+C
-          (e.keyCode === 86 && e.ctrlKey) || // Ctrl+V
-          (e.keyCode === 88 && e.ctrlKey) || // Ctrl+X
-          (e.keyCode === 90 && e.ctrlKey)) { // Ctrl+Z
-        return;
-      }
-      
-      // Permitir solo números
-      if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-        e.preventDefault();
-      }
-    });
-  }
-
-  /**
-   * Inicializar funcionalidad de carga de imágenes
-   */
-  function initializeImageUpload() {
-    const uploadInput = document.getElementById('upload');
-    const uploadedAvatar = document.getElementById('uploadedAvatar');
-    const resetButton = document.querySelector('.account-image-reset');
-
-    if (uploadInput && uploadedAvatar) {
-      // Evento para cuando se selecciona una imagen
-      uploadInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        
-        if (file) {
-          // Validar tipo de archivo
-          if (!file.type.match('image.*')) {
-            showNotification('Por favor selecciona un archivo de imagen válido', 'error');
-            return;
-          }
-          
-          // Validar tamaño de archivo (800KB máximo)
-          if (file.size > 800 * 1024) {
-            showNotification('El archivo es demasiado grande. Máximo 800KB', 'error');
-            return;
-          }
-          
-          // Crear objeto FileReader para previsualizar la imagen
-          const reader = new FileReader();
-          
-          reader.onload = function(e) {
-            uploadedAvatar.src = e.target.result;
-            uploadedAvatar.style.display = 'block';
-          };
-          
-          reader.readAsDataURL(file);
-        }
-      });
-    }
-
-    // Evento para resetear la imagen
-    if (resetButton) {
-      resetButton.addEventListener('click', function() {
-        if (uploadInput) {
-          uploadInput.value = '';
-        }
-        if (uploadedAvatar) {
-          uploadedAvatar.src = "{{ asset('assets/img/avatars/1.png') }}";
-        }
-      });
-    }
   }
 
   /**
    * Inicializar selects dinámicos para provincia, municipio y sector
    */
   function initializeDynamicSelects() {
-    console.log('Inicializando selects dinámicos...');
     // Esperar a que Select2 se inicialice
     setTimeout(() => {
       const provinceSelect = $('#province_id');
       const municipalitySelect = $('#municipality_id');
       const sectorSelect = $('#sector_id');
 
-      console.log('Selects encontrados:', {
-        province: provinceSelect.length,
-        municipality: municipalitySelect.length,
-        sector: sectorSelect.length
-      });
-
       if (provinceSelect.length) {
-        console.log('Configurando evento change para provincia');
         provinceSelect.on('change', function() {
           const provinceId = $(this).val();
-          console.log('Provincia seleccionada:', provinceId);
           
           // Limpiar municipios y sectores
           clearSelect2(municipalitySelect);
@@ -333,20 +366,14 @@
           }
         });
       }
-
-      // Cargar municipios y sectores si ya hay valores seleccionados (para edición)
-      if (provinceSelect.length && provinceSelect.val()) {
-        loadMunicipalities(provinceSelect.val(), municipalitySelect.val());
-      }
     }, 100);
   }
 
   /**
    * Cargar municipios por provincia
    * @param {string} provinceId - ID de la provincia
-   * @param {string} selectedMunicipalityId - ID del municipio previamente seleccionado (opcional)
    */
-  function loadMunicipalities(provinceId, selectedMunicipalityId = null) {
+  function loadMunicipalities(provinceId) {
     const municipalitySelect = $('#municipality_id');
     
     if (!municipalitySelect.length) return;
@@ -355,8 +382,6 @@
     municipalitySelect.prop('disabled', true);
     municipalitySelect.empty().append('<option value="">Cargando municipios...</option>');
     municipalitySelect.trigger('change');
-
-    console.log('Cargando municipios para provincia:', provinceId);
     
     fetch(`/api/municipalities/${provinceId}`, {
       method: 'GET',
@@ -365,12 +390,8 @@
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       }
     })
-      .then(response => {
-        console.log('Respuesta del servidor:', response.status);
-        return response.json();
-      })
+      .then(response => response.json())
       .then(data => {
-        console.log('Datos recibidos:', data);
         if (data.success) {
           municipalitySelect.empty().append('<option value="">Seleccionar Municipio</option>');
           
@@ -379,13 +400,8 @@
               .attr('value', municipality.id)
               .text(municipality.name);
             
-            if (selectedMunicipalityId && municipality.id == selectedMunicipalityId) {
-              option.prop('selected', true);
-            }
-            
             municipalitySelect.append(option);
           });
-          console.log('Municipios cargados exitosamente');
         } else {
           municipalitySelect.empty().append('<option value="">Error al cargar municipios</option>');
           showNotification('Error al cargar los municipios', 'error');
@@ -405,9 +421,8 @@
   /**
    * Cargar sectores por municipio
    * @param {string} municipalityId - ID del municipio
-   * @param {string} selectedSectorId - ID del sector previamente seleccionado (opcional)
    */
-  function loadSectors(municipalityId, selectedSectorId = null) {
+  function loadSectors(municipalityId) {
     const sectorSelect = $('#sector_id');
     
     if (!sectorSelect.length) return;
@@ -433,10 +448,6 @@
             const option = $('<option></option>')
               .attr('value', sector.id)
               .text(sector.name);
-            
-            if (selectedSectorId && sector.id == selectedSectorId) {
-              option.prop('selected', true);
-            }
             
             sectorSelect.append(option);
           });
@@ -464,16 +475,6 @@
     if (select && select.length) {
       select.empty().append('<option value="">Seleccionar...</option>');
       select.trigger('change');
-    }
-  }
-
-  /**
-   * Limpiar un select y agregar opción por defecto (versión vanilla JS)
-   * @param {HTMLSelectElement} select - Elemento select a limpiar
-   */
-  function clearSelect(select) {
-    if (select) {
-      select.innerHTML = '<option value="">Seleccionar...</option>';
     }
   }
 
@@ -508,132 +509,39 @@
   }
 
   /**
-   * Validar formulario antes del envío
+   * Validar formulario antes del envío (sin validaciones restrictivas)
    */
   function validateForm() {
-    const requiredFields = [
-      'name',
-      'last_name', 
-      'dni',
-      'birth_date',
-      'birth_place',
-      'country',
-      'province_id',
-      'municipality_id',
-      'cell_phone',
-      'emergency_contact_name',
-      'emergency_contact_phone'
-    ];
+    const form = document.getElementById('formAccountSettings');
+    if (!form) return true; // Siempre permitir envío
 
-    let isValid = true;
-    let firstInvalidField = null;
-
-    requiredFields.forEach(fieldName => {
-      const field = document.querySelector(`[name="${fieldName}"]`);
-      if (field && !field.value.trim()) {
-        field.classList.add('is-invalid');
-        if (!firstInvalidField) {
-          firstInvalidField = field;
-        }
-        isValid = false;
-      } else if (field) {
-        field.classList.remove('is-invalid');
-      }
+    // Limpiar clases de validación de todos los campos
+    const allFields = form.querySelectorAll('input, select, textarea');
+    allFields.forEach(field => {
+      field.classList.remove('is-invalid', 'is-valid');
     });
 
-    // Validar email si está presente
-    const emailField = document.querySelector('[name="email"]');
-    if (emailField && emailField.value) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(emailField.value)) {
-        emailField.classList.add('is-invalid');
-        showNotification('Por favor ingresa un email válido', 'error');
-        isValid = false;
-      }
-    }
-
-    // Validar formato de cédula
-    const dniField = document.querySelector('[name="dni"]');
-    if (dniField && dniField.value) {
-      const cedulaRegex = /^\d{3}-\d{7}-\d{1}$/;
-      if (!cedulaRegex.test(dniField.value)) {
-        dniField.classList.add('is-invalid');
-        showNotification('La cédula debe tener el formato 000-0000000-0', 'error');
-        isValid = false;
-      }
-    }
-
-    // Validar formato de cédula anterior si está presente
-    const previousDniField = document.querySelector('[name="previous_dni"]');
-    if (previousDniField && previousDniField.value) {
-      const cedulaRegex = /^\d{3}-\d{7}-\d{1}$/;
-      if (!cedulaRegex.test(previousDniField.value)) {
-        previousDniField.classList.add('is-invalid');
-        showNotification('La cédula anterior debe tener el formato 000-0000000-0', 'error');
-        isValid = false;
-      }
-    }
-
-    // Validar formato de teléfono celular
-    const cellPhoneField = document.querySelector('[name="cell_phone"]');
-    if (cellPhoneField && cellPhoneField.value) {
-      const phoneRegex = /^\d{4}-\d{3}-\d{4}$/;
-      if (!phoneRegex.test(cellPhoneField.value)) {
-        cellPhoneField.classList.add('is-invalid');
-        showNotification('El teléfono celular debe tener el formato 0000-000-0000', 'error');
-        isValid = false;
-      }
-    }
-
-    if (!isValid && firstInvalidField) {
-      firstInvalidField.focus();
-      showNotification('Por favor completa todos los campos obligatorios', 'error');
-    }
-
-    return isValid;
+    return true; // Siempre válido para permitir actualización
   }
 
-  // Evento para validar formulario antes del envío
+  // Evento para validar formulario antes del envío (sin restricciones)
   const form = document.getElementById('formAccountSettings');
   if (form) {
     form.addEventListener('submit', function(e) {
-      if (!validateForm()) {
-        e.preventDefault();
-        return false;
-      }
-    });
-  }
-
-  // Funcionalidad para agregar teléfonos adicionales (placeholder)
-  const addCellPhoneBtn = document.getElementById('addCellPhone');
-  const addHomePhoneBtn = document.getElementById('addHomePhone');
-  
-  if (addCellPhoneBtn) {
-    addCellPhoneBtn.addEventListener('click', function() {
-      // Aquí se puede implementar la funcionalidad para agregar múltiples teléfonos
-      console.log('Agregar teléfono celular adicional');
-      showNotification('Funcionalidad de teléfonos adicionales próximamente', 'info');
-    });
-  }
-
-  if (addHomePhoneBtn) {
-    addHomePhoneBtn.addEventListener('click', function() {
-      // Aquí se puede implementar la funcionalidad para agregar múltiples teléfonos
-      console.log('Agregar teléfono fijo adicional');
-      showNotification('Funcionalidad de teléfonos adicionales próximamente', 'info');
+      // Siempre permitir envío - sin validaciones que bloqueen
+      validateForm(); // Solo para limpiar clases de validación
     });
   }
 
   // Exponer funciones globalmente si es necesario
-  window.PeopleCreate = {
+  window.PeopleShow = {
+    enableEditMode: enableEditMode,
+    disableEditMode: disableEditMode,
     calculateAge: calculateAge,
     showNotification: showNotification,
     validateForm: validateForm,
-    applyCedulaMask: applyCedulaMask,
-    applyPhoneMask: applyPhoneMask,
     loadMunicipalities: loadMunicipalities,
     loadSectors: loadSectors,
-    clearSelect: clearSelect,
     clearSelect2: clearSelect2
   };
 

@@ -70,6 +70,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
   Route::get('people/create', [PeopleController::class, 'create'])->name('people.create');
   Route::post('people', [PeopleController::class, 'store'])->name('people.store');
   Route::get('people/{id}/show', [PeopleController::class, 'show'])->name('people.show');
+  Route::put('people/{id}/update', [PeopleController::class, 'update'])->name('people.update');
+  Route::get('people/{id}/information-residential', [PeopleController::class, 'showInformationResidential'])->name('people.showInformationResidential');
+  Route::put('people/{id}/residence', [PeopleController::class, 'updateResidence'])->name('people.update-residence');
   Route::post('people/update-status', [PeopleController::class, 'updateStatus'])->name('people.update-status');
   Route::post('people/export-excel', [PeopleController::class, 'exportExcel'])->name('people.export-excel');
   Route::post('people/export-pdf', [PeopleController::class, 'exportPdf'])->name('people.export-pdf');

@@ -69,6 +69,9 @@ export default defineConfig({
         'resources/js/roles-edit.js', // Processing Roles Edit JS File
         'resources/js/people-index.js', // Processing People Index DataTable JS File
         'resources/js/people-create.js', // Processing People Create Form JS File
+        'resources/js/people-show.js', // Processing People Show Form JS File
+        'resources/js/info-people.js', // Processing Info People Form JS File
+        'resources/js/information-residence.js', // Processing Information Residence Form JS File
         ...CoreScssFiles,
         ...LibsScssFiles,
         ...LibsCssFiles,
